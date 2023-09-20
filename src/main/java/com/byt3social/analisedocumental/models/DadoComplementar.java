@@ -14,6 +14,8 @@ public class DadoComplementar {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String valor;
+    @Column(name = "processo_id")
     private Integer processoId;
+    @Column(name = "tipo_id")
     private Integer tipoId;
 }

@@ -18,5 +18,6 @@ public class Documento {
     private StatusDocumento status;
     private String assinaturaDigital;
     private Integer tipoDocumentoId;
+    @Column(name = "processo_id")
     private Integer processoId;
 }

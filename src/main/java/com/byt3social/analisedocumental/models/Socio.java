@@ -16,5 +16,6 @@ public class Socio {
     private String nome;
     private String cpf;
     private String qualificacao;
+    @Column(name = "processo_id")
     private Integer processoId;
 }

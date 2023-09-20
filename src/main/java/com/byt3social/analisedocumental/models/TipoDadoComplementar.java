@@ -6,6 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity(name = "TipoDadoComplementar")
 @Table(name = "tipos_dados_complementares")
 @NoArgsConstructor
@@ -15,5 +17,7 @@ public class TipoDadoComplementar {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String nome;
-    private String tipo;
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_id", referencedColumnName = "id")
+    private List<TipoDadoComplementar> tipos;
 }
