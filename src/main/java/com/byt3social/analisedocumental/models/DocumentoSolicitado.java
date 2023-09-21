@@ -3,12 +3,14 @@ package com.byt3social.analisedocumental.models;
 import com.byt3social.analisedocumental.enums.StatusDocumentoSolicitado;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "DocumentoSolicitado")
 @Table(name = "documentos_solicitados")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Getter
 public class DocumentoSolicitado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,8 +19,9 @@ public class DocumentoSolicitado {
     private StatusDocumentoSolicitado status;
     private String assinaturaDigital;
     private Boolean obrigatorio;
-    @Column(name = "documento_id")
-    private Integer documentoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "documento_id", referencedColumnName = "id")
+    private Documento documento;
     @Column(name = "processo_id")
     private Integer processoId;
 }
