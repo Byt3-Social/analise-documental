@@ -1,23 +1,22 @@
 package com.byt3social.analisedocumental.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Entity(name = "TipoDadoComplementar")
-@Table(name = "tipos_dados_complementares")
+@Entity(name = "Dado")
+@Table(name = "dados")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TipoDadoComplementar {
+public class Dado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String nome;
+    private Boolean padrao;
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tipo_id", referencedColumnName = "id")
-    private List<TipoDadoComplementar> tipos;
+    @JoinColumn(name = "dado_id", referencedColumnName = "id")
+    private List<Dado> dados;
 }

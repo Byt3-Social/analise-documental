@@ -1,17 +1,21 @@
 package com.byt3social.analisedocumental.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TipoDocumento")
-@Table(name = "tipos_documentos")
+@Entity(name = "DadoSolicitado")
+@Table(name = "dados_solicitados")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TipoDocumento {
+public class DadoSolicitado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String nome;
+    private String valor;
+    private Boolean obrigatorio;
+    @Column(name = "processo_id")
+    private Integer processoId;
+    @Column(name = "dado_id")
+    private Integer dadosId;
 }

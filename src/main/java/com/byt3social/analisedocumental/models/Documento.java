@@ -1,8 +1,6 @@
 package com.byt3social.analisedocumental.models;
 
-import com.byt3social.analisedocumental.enums.StatusDocumento;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
@@ -14,10 +12,6 @@ public class Documento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String url;
-    private StatusDocumento status;
-    private String assinaturaDigital;
-    private Integer tipoDocumentoId;
-    @Column(name = "processo_id")
-    private Integer processoId;
+    private String nome;
+    private Boolean padrao;
 }

@@ -48,10 +48,10 @@ public class Processo {
     List<Socio> socios = new ArrayList<>();
     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JoinColumn(name = "processo_id", referencedColumnName = "id")
-    private List<Documento> documentos = new ArrayList<>();
+    private List<DocumentoSolicitado> documentosSolicitados = new ArrayList<>();
     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JoinColumn(name = "processo_id", referencedColumnName = "id")
-    List<DadoComplementar> dadosComplementares = new ArrayList<>();
+    List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
 
     public Processo(String cnpj) {
         this.cnpj = cnpj;
