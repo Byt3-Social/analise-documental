@@ -16,12 +16,21 @@ public class DocumentoSolicitado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String url;
+    @Enumerated(value = EnumType.STRING)
     private StatusDocumentoSolicitado status;
     private String assinaturaDigital;
     private Boolean obrigatorio;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "documento_id", referencedColumnName = "id")
+    @JoinColumn(name = "documento_id")
     private Documento documento;
-    @Column(name = "processo_id")
-    private Integer processoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "processo_id")
+    private Processo processo;
+
+    public DocumentoSolicitado(Documento documento, Processo novoProcesso) {
+        this.obrigatorio = true;
+        this.documento = documento;
+        this.processo = novoProcesso;
+        this.status = StatusDocumentoSolicitado.NAO_ENVIADO;
+    }
 }

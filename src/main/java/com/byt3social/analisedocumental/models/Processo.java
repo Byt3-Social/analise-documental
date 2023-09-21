@@ -1,20 +1,25 @@
 package com.byt3social.analisedocumental.models;
 
+import com.byt3social.analisedocumental.dto.ProcessoDTO;
 import com.byt3social.analisedocumental.enums.StatusProcesso;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity(name = "Processo")
 @Table(name = "processos")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Getter
+@Setter
 public class Processo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,18 +48,24 @@ public class Processo {
     private Responsavel responsavel;
     private String link;
     private String feedback;
-    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "processo_id", referencedColumnName = "id")
-    List<Socio> socios = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "processo_id", referencedColumnName = "id")
-    private List<DocumentoSolicitado> documentosSolicitados = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "processo_id", referencedColumnName = "id")
-    List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
+    @OneToMany(mappedBy = "processo", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    private List<Socio> socios;
+    @OneToMany(mappedBy = "processo", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    private List<DocumentoSolicitado> documentosSolicitados;
+    @OneToMany(mappedBy = "processo", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    private List<DadoSolicitado> dadosSolicitados;
 
-    public Processo(String cnpj) {
-        this.cnpj = cnpj;
+    public Processo(ProcessoDTO dadosProcesso) {
+        this.cnpj = dadosProcesso.cnpj();
         this.status = StatusProcesso.CRIADO;
+        this.link = UUID.randomUUID().toString();
+    }
+
+    public void adicionaDadosSolicitados(List<DadoSolicitado> dadosSolicitados) {
+        this.dadosSolicitados = dadosSolicitados;
+    }
+
+    public void adicionaDocumentosSolicitados(List<DocumentoSolicitado> documentosSolicitados) {
+        this.documentosSolicitados = documentosSolicitados;
     }
 }

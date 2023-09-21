@@ -1,14 +1,15 @@
 package com.byt3social.analisedocumental.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "Socio")
 @Table(name = "socios")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Getter
 public class Socio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +17,7 @@ public class Socio {
     private String nome;
     private String cpf;
     private String qualificacao;
-    @Column(name = "processo_id")
-    private Integer processoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "processo_id")
+    private Processo processo;
 }
