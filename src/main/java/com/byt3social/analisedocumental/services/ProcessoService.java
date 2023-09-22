@@ -22,7 +22,7 @@ public class ProcessoService {
     private DocumentoRepository documentoRepository;
 
     @Transactional
-    public void criaProcesso(ProcessoDTO dadosProcesso) {
+    public void criarProcesso(ProcessoDTO dadosProcesso) {
         Processo novoProcesso = new Processo(dadosProcesso);
 
         List<Dado> dados = dadoRepository.findDadoByPadrao(true);
@@ -43,5 +43,15 @@ public class ProcessoService {
         novoProcesso.adicionaDocumentosSolicitados(documentoSolicitados);
 
         processoRepository.save(novoProcesso);
+    }
+
+    public List<Processo> buscarProcessos() {
+        return processoRepository.findAll();
+    }
+
+    public Processo buscaProcesso(Integer id) {
+        Processo processo = processoRepository.findById(id).get();
+        System.out.println(processo.getDocumentosSolicitados().get(0).getDocumento().getNome());
+        return processo;
     }
 }

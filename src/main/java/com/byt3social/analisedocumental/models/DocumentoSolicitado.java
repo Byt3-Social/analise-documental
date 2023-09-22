@@ -1,6 +1,7 @@
 package com.byt3social.analisedocumental.models;
 
 import com.byt3social.analisedocumental.enums.StatusDocumentoSolicitado;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,11 +21,12 @@ public class DocumentoSolicitado {
     private StatusDocumentoSolicitado status;
     private String assinaturaDigital;
     private Boolean obrigatorio;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "documento_id")
     private Documento documento;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "processo_id")
+    @JsonBackReference
     private Processo processo;
 
     public DocumentoSolicitado(Documento documento, Processo novoProcesso) {

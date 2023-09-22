@@ -1,5 +1,6 @@
 package com.byt3social.analisedocumental.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,11 +19,12 @@ public class DadoSolicitado {
     private Integer id;
     private String valor;
     private Boolean obrigatorio;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "dado_id")
     private Dado dado;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "processo_id")
+    @JsonBackReference
     private Processo processo;
 
     public DadoSolicitado(Dado dado, Processo novoProcesso) {
