@@ -30,8 +30,8 @@ public class ProcessoController {
     }
 
     @PostMapping("/processos")
-    public ResponseEntity iniciarProcesso(@RequestBody ProcessoDTO dados) {
-        processoService.criarProcesso(dados);
+    public ResponseEntity iniciarProcesso(@RequestBody ProcessoDTO dados, HttpServletRequest request) {
+        processoService.criarProcesso(dados, request);
 
         return new ResponseEntity(HttpStatus.CREATED);
     }

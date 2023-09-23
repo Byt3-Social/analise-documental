@@ -5,9 +5,11 @@ import com.byt3social.analisedocumental.models.*;
 import com.byt3social.analisedocumental.repositories.DadoRepository;
 import com.byt3social.analisedocumental.repositories.DocumentoRepository;
 import com.byt3social.analisedocumental.repositories.ProcessoRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +22,11 @@ public class ProcessoService {
     private DadoRepository dadoRepository;
     @Autowired
     private DocumentoRepository documentoRepository;
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
-    public void criarProcesso(ProcessoDTO dadosProcesso) {
+    public void criarProcesso(ProcessoDTO dadosProcesso, HttpServletRequest request) {
         Processo novoProcesso = new Processo(dadosProcesso);
 
         List<Dado> dados = dadoRepository.findDadoByPadrao(true);
@@ -43,6 +47,14 @@ public class ProcessoService {
         novoProcesso.adicionaDocumentosSolicitados(documentoSolicitados);
 
         processoRepository.save(novoProcesso);
+
+        String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+                .replacePath(null)
+                .build()
+                .toUriString();
+        String empresaURL = baseUrl + "/compliance/organizacoes/" + novoProcesso.getLink();
+
+        emailService.notificaEmpresa("Byt3 Social", empresaURL);
     }
 
     public List<Processo> buscarProcessos() {
