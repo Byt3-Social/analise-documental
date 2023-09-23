@@ -54,4 +54,13 @@ public class ProcessoService {
         System.out.println(processo.getDocumentosSolicitados().get(0).getDocumento().getNome());
         return processo;
     }
+
+    @Transactional
+    public void alteraProcesso(Integer id, ProcessoDTO dados) {
+        Processo processo = processoRepository.findById(id).get();
+        List<Dado> listaDados = dadoRepository.findAll();
+        List<Documento> listaDocumentos = documentoRepository.findAll();
+
+        processo.atualizaProcesso(dados, listaDados, listaDocumentos);
+    }
 }

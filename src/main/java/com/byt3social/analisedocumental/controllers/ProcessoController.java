@@ -35,4 +35,11 @@ public class ProcessoController {
 
         return new ResponseEntity(HttpStatus.CREATED);
     }
+
+    @PutMapping("/processos/{id}")
+    public ResponseEntity alteraProcesso(@PathVariable Integer id, @RequestBody ProcessoDTO dados) {
+        processoService.alteraProcesso(id, dados);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
