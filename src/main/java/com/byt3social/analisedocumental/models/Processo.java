@@ -1,9 +1,6 @@
 package com.byt3social.analisedocumental.models;
 
-import com.byt3social.analisedocumental.dto.DadoSolicitadoDTO;
-import com.byt3social.analisedocumental.dto.DocumentoSolicitadoDTO;
-import com.byt3social.analisedocumental.dto.ProcessoDTO;
-import com.byt3social.analisedocumental.dto.SocioDTO;
+import com.byt3social.analisedocumental.dto.*;
 import com.byt3social.analisedocumental.enums.StatusProcesso;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -74,6 +71,15 @@ public class Processo {
 
     public Processo(ProcessoDTO dadosProcesso) {
         this.cnpj = dadosProcesso.cnpj();
+        this.status = StatusProcesso.CRIADO;
+        this.link = UUID.randomUUID().toString();
+    }
+
+    public Processo(OrganizacaoDTO organizacao) {
+        this.cnpj = organizacao.cnpj();
+        this.nomeEmpresarial = organizacao.nome();
+        this.email = organizacao.email();
+        this.responsavel = new Responsavel(organizacao.responsavel());
         this.status = StatusProcesso.CRIADO;
         this.link = UUID.randomUUID().toString();
     }

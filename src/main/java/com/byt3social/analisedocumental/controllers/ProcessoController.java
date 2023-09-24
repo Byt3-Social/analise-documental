@@ -29,13 +29,6 @@ public class ProcessoController {
         return new ResponseEntity<>(processo, HttpStatus.OK);
     }
 
-    @PostMapping("/processos")
-    public ResponseEntity iniciarProcesso(@RequestBody ProcessoDTO dados, HttpServletRequest request) {
-        processoService.criarProcesso(dados, request);
-
-        return new ResponseEntity(HttpStatus.CREATED);
-    }
-
     @PutMapping("/processos/{id}")
     public ResponseEntity alteraProcesso(@PathVariable Integer id, @RequestBody ProcessoDTO dados) {
         processoService.alteraProcesso(id, dados);

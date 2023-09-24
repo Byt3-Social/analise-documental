@@ -1,18 +1,21 @@
 package com.byt3social.analisedocumental.services;
 
+import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
 import com.byt3social.analisedocumental.dto.ProcessoDTO;
+import com.byt3social.analisedocumental.enums.StatusProcesso;
 import com.byt3social.analisedocumental.models.*;
 import com.byt3social.analisedocumental.repositories.DadoRepository;
 import com.byt3social.analisedocumental.repositories.DocumentoRepository;
 import com.byt3social.analisedocumental.repositories.ProcessoRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProcessoService {
@@ -24,10 +27,12 @@ public class ProcessoService {
     private DocumentoRepository documentoRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Transactional
-    public void criarProcesso(ProcessoDTO dadosProcesso, HttpServletRequest request) {
-        Processo novoProcesso = new Processo(dadosProcesso);
+    public void criarProcesso(OrganizacaoDTO organizacao) {
+        Processo novoProcesso = new Processo(organizacao);
 
         List<Dado> dados = dadoRepository.findDadoByPadrao(true);
         List<Documento> documentos = documentoRepository.findDocumentoByPadrao(true);
@@ -48,13 +53,15 @@ public class ProcessoService {
 
         processoRepository.save(novoProcesso);
 
-        String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                .replacePath(null)
-                .build()
-                .toUriString();
-        String empresaURL = baseUrl + "/compliance/organizacoes/" + novoProcesso.getLink();
+        Map<String, String> org = new HashMap<>();
+        org.put("cnpj", novoProcesso.getCnpj());
+        org.put("status_cadastro", StatusProcesso.EM_ANALISE.toString());
 
-        emailService.notificaEmpresa("Byt3 Social", empresaURL);
+        System.out.println(org.get("status_cadastro"));
+
+        rabbitTemplate.convertAndSend("processos.ex", "processo.aberto", org);
+
+        emailService.notificaEmpresa(novoProcesso);
     }
 
     public List<Processo> buscarProcessos() {
