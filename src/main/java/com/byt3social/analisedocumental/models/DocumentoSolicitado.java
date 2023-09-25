@@ -83,4 +83,9 @@ public class DocumentoSolicitado {
 
         this.processo = processo;
     }
+
+    public void atualizarInformacoes(String pathDocumento) {
+        this.url = pathDocumento;
+        this.status = StatusDocumentoSolicitado.ENVIADO;
+    }
 }
