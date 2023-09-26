@@ -13,10 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "Processo")
 @Table(name = "processos")
@@ -28,6 +25,9 @@ public class Processo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(name = "cadastro_id")
+    @JsonProperty("cadastro_id")
+    private Integer cadastroId;
     private String cnpj;
     @Column(name = "data_abertura")
     @JsonProperty("data_abertura")
@@ -44,225 +44,96 @@ public class Processo {
     private String email;
     private String telefone;
     @CreationTimestamp
-    @Column(name = "data_criacao", updatable = false)
-    @JsonProperty("data_criacao")
-    private Timestamp dataCriacao;
+    @Column(name = "created_at")
+    @JsonProperty("created_at")
+    private Timestamp createdAt;
     @UpdateTimestamp
-    @Column(name = "data_atualizacao")
-    @JsonProperty("data_atualizacao")
+    @Column(name = "updated_at")
+    @JsonProperty("updated_at")
     private Timestamp dataAtualizacao;
     @Enumerated(value = EnumType.STRING)
     private StatusProcesso status;
     @Embedded
     private Responsavel responsavel;
-    private String link;
+    private String uuid;
     private String feedback;
-    @OneToMany(mappedBy = "processo", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "processo", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<Socio> socios;
-    @OneToMany(mappedBy = "processo", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Socio> socios = new ArrayList<>();
+    @OneToMany(mappedBy = "processo", fetch = FetchType.LAZY)
     @JsonManagedReference
     @JsonProperty("documentos_solicitados")
-    private List<DocumentoSolicitado> documentosSolicitados;
-    @OneToMany(mappedBy = "processo", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<DocumentoSolicitado> documentosSolicitados = new ArrayList<>();
+    @OneToMany(mappedBy = "processo", fetch = FetchType.LAZY)
     @JsonManagedReference
     @JsonProperty("dados_solicitados")
-    private List<DadoSolicitado> dadosSolicitados;
+    private List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
 
-    public Processo(ProcessoDTO dadosProcesso) {
-        this.cnpj = dadosProcesso.cnpj();
-        this.status = StatusProcesso.CRIADO;
-        this.link = UUID.randomUUID().toString();
+    public Processo(OrganizacaoDTO organizacaoDTO) {
+        this.cadastroId = organizacaoDTO.id();
+        this.cnpj = organizacaoDTO.cnpj();
+        this.nomeEmpresarial = organizacaoDTO.nome();
+        this.email = organizacaoDTO.email();
+        this.responsavel = new Responsavel(organizacaoDTO.responsavel());
+        this.status = StatusProcesso.ABERTO;
+        this.uuid = UUID.randomUUID().toString();
     }
 
-    public Processo(OrganizacaoDTO organizacao) {
-        this.cnpj = organizacao.cnpj();
-        this.nomeEmpresarial = organizacao.nome();
-        this.email = organizacao.email();
-        this.responsavel = new Responsavel(organizacao.responsavel());
-        this.status = StatusProcesso.CRIADO;
-        this.link = UUID.randomUUID().toString();
-    }
-
-    public void adicionaDadosSolicitados(List<DadoSolicitado> dadosSolicitados) {
+    public void vincularDadosSolicitados(List<DadoSolicitado> dadosSolicitados) {
         this.dadosSolicitados = dadosSolicitados;
     }
 
-    public void adicionaDocumentosSolicitados(List<DocumentoSolicitado> documentosSolicitados) {
+    public void vincularDocumentosSolicitados(List<DocumentoSolicitado> documentosSolicitados) {
         this.documentosSolicitados = documentosSolicitados;
     }
 
-    public void atualizaProcesso(ProcessoDTO dados, List<Dado> listaDados, List<Documento> listaDocumentos) {
-        if(dados.cnpj() != null) {
-            this.cnpj = dados.cnpj();
+    public void atualizar(ProcessoDTO processoDTO) {
+        if(processoDTO.cnpj() != null) {
+            this.cnpj = processoDTO.cnpj();
         }
 
-        if(dados.dataAbertura() != null) {
-            this.dataAbertura = dados.dataAbertura();
+        if(processoDTO.dataAbertura() != null) {
+            this.dataAbertura = processoDTO.dataAbertura();
         }
 
-        if(dados.nomeEmpresarial() != null) {
-            this.nomeEmpresarial = dados.nomeEmpresarial();
+        if(processoDTO.nomeEmpresarial() != null) {
+            this.nomeEmpresarial = processoDTO.nomeEmpresarial();
         }
 
-        if(dados.nomeFantasia() != null) {
-            this.nomeFantasia = dados.nomeFantasia();
+        if(processoDTO.nomeFantasia() != null) {
+            this.nomeFantasia = processoDTO.nomeFantasia();
         }
 
-        if(dados.endereco() != null) {
-            this.endereco = new Endereco(dados.endereco());
+        if(processoDTO.endereco() != null) {
+            this.endereco = new Endereco(processoDTO.endereco());
         }
 
-        if(dados.porte() != null) {
-            this.porte = dados.porte();
+        if(processoDTO.porte() != null) {
+            this.porte = processoDTO.porte();
         }
 
-        if(dados.email() != null) {
-            this.email = dados.email();
+        if(processoDTO.email() != null) {
+            this.email = processoDTO.email();
         }
 
-        if(dados.telefone() != null) {
-            this.telefone = dados.telefone();
+        if(processoDTO.telefone() != null) {
+            this.telefone = processoDTO.telefone();
         }
 
-        if(dados.dataCriacao() != null) {
-            this.dataCriacao = dados.dataCriacao();
+        if(processoDTO.status() != null) {
+            this.status = processoDTO.status();
         }
 
-        if(dados.status() != null) {
-            this.status = dados.status();
+        if(processoDTO.responsavel() != null) {
+            this.responsavel = new Responsavel(processoDTO.responsavel());
         }
 
-        if(dados.dataAtualizacao() != null) {
-            this.dataAtualizacao = dados.dataAtualizacao();
+        if(processoDTO.uuid() != null) {
+            this.uuid = processoDTO.uuid();
         }
 
-        if(dados.responsavel() != null) {
-            this.responsavel = new Responsavel(dados.responsavel());
+        if(processoDTO.feedback() != null) {
+            this.feedback = processoDTO.feedback();
         }
-
-        if(dados.link() != null) {
-            this.link = dados.link();
-        }
-
-        if(dados.feedback() != null) {
-            this.feedback = dados.feedback();
-        }
-
-        if(dados.socios() != null) {
-            atualizaSocios(dados);
-        }
-
-        if(dados.documentosSolicitados() != null) {
-            atualizaDocumentosSolicitados(dados, listaDocumentos);
-        }
-
-        if(dados.dadosSolicitados() != null) {
-            atualizaDadosSolicitados(dados, listaDados);
-        }
-    }
-
-    private void atualizaDocumentosSolicitados(ProcessoDTO dados, List<Documento> listaDocumentos) {
-        ListIterator<DocumentoSolicitado> documentoSolicitadoListIterator
-                = this.documentosSolicitados.listIterator();
-
-        while(documentoSolicitadoListIterator.hasNext()) {
-            DocumentoSolicitado documentoSolicitado = documentoSolicitadoListIterator.next();
-
-            if(!existeDocumentoSolicitado(dados.documentosSolicitados(), documentoSolicitado.getId())) {
-                documentoSolicitadoListIterator.remove();
-            } else {
-                DocumentoSolicitadoDTO documentosSolicitadosDados = dados.documentosSolicitados().stream().filter(documentoSolicitadoDTO -> documentoSolicitadoDTO.id().equals(documentoSolicitado.getId())).findFirst().get();
-
-                documentoSolicitado.atualizaDocumentoSolicitado(documentosSolicitadosDados, this);
-            }
-        }
-
-        dados.documentosSolicitados().forEach(documentoSolicitadoDTO -> {
-            if(documentoSolicitadoDTO.id() == null) {
-                DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(documentoSolicitadoDTO, this, listaDocumentos);
-                this.documentosSolicitados.add(documentoSolicitado);
-            }
-        });
-    }
-
-    private void atualizaDadosSolicitados(ProcessoDTO dados, List<Dado> listaDados) {
-        ListIterator<DadoSolicitado> dadoSolicitadoListIterator
-                = this.dadosSolicitados.listIterator();
-
-        while(dadoSolicitadoListIterator.hasNext()) {
-            DadoSolicitado dadoSolicitado = dadoSolicitadoListIterator.next();
-
-            if(!existeDadoSolicitado(dados.dadosSolicitados(), dadoSolicitado.getId())) {
-                dadoSolicitadoListIterator.remove();
-            } else {
-                DadoSolicitadoDTO dadoDTO = dados.dadosSolicitados().stream().filter(dadoSolicitadoDTO -> dadoSolicitadoDTO.id().equals(dadoSolicitado.getId())).findFirst().get();
-
-                dadoSolicitado.atualizaDado(dadoDTO, this);
-            }
-        }
-
-        dados.dadosSolicitados().forEach(dadoSolicitadoDTO -> {
-            if(dadoSolicitadoDTO.id() == null) {
-                System.out.println("n existe");
-                DadoSolicitado dado = new DadoSolicitado(dadoSolicitadoDTO, this, listaDados);
-                this.dadosSolicitados.add(dado);
-                System.out.println(dado.getDado().getId());
-            }
-        });
-    }
-
-    private void atualizaSocios(ProcessoDTO dados) {
-        ListIterator<Socio> socioListIterator
-                = this.socios.listIterator();
-
-        while(socioListIterator.hasNext()) {
-            Socio socio = socioListIterator.next();
-
-            if(!existeSocio(dados.socios(), socio.getId())) {
-                socioListIterator.remove();
-            } else {
-                SocioDTO socioDados = dados.socios().stream().filter(socioDTO -> socioDTO.id().equals(socio.getId())).findFirst().get();
-
-                socio.atualizaSocio(socioDados);
-            }
-        }
-
-        dados.socios().forEach(socioDTO -> {
-            if(socioDTO.id() == null) {
-                Socio socio = new Socio(socioDTO, this);
-                this.socios.add(socio);
-            }
-        });
-    }
-
-    private Boolean existeSocio(List<SocioDTO> socios, Integer id) {
-        return socios.stream().anyMatch(socioDTO -> {
-            if(socioDTO.id() != null) {
-                return socioDTO.id().equals(id);
-            }
-
-            return false;
-        });
-    }
-
-    private Boolean existeDadoSolicitado(List<DadoSolicitadoDTO> dadosSolicitados, Integer id) {
-        return dadosSolicitados.stream().anyMatch(dadoSolicitadoDTO -> {
-            if(dadoSolicitadoDTO.id() != null) {
-                return dadoSolicitadoDTO.id().equals(id);
-            }
-
-            return false;
-        });
-    }
-
-    private Boolean existeDocumentoSolicitado(List<DocumentoSolicitadoDTO> documentosSolicitados, Integer id) {
-        return documentosSolicitados.stream().anyMatch(documentoSolicitadoDTO -> {
-            if(documentoSolicitadoDTO.id() != null) {
-                return documentoSolicitadoDTO.id().equals(id);
-            }
-
-            return false;
-        });
     }
 }

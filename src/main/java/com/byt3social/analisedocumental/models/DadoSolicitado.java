@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Entity(name = "DadoSolicitado")
 @Table(name = "dados_solicitados")
 @NoArgsConstructor
@@ -22,10 +20,10 @@ public class DadoSolicitado {
     private Integer id;
     private String valor;
     private Boolean obrigatorio;
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "dado_id")
     private Dado dado;
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "processo_id")
     @JsonBackReference
     private Processo processo;
@@ -36,20 +34,7 @@ public class DadoSolicitado {
         this.processo = processo;
     }
 
-    public DadoSolicitado(DadoSolicitadoDTO dado, Processo processo, List<Dado> listaDados) {
-        this.obrigatorio = dado.obrigatorio();
-        this.valor = dado.valor();
-
-        if(dado.dado().id() != null) {
-            this.dado = listaDados.stream().filter(dadoComplementar -> dadoComplementar.getId().equals(dado.dado().id())).findFirst().get();
-        } else {
-            this.dado = new Dado(dado.dado());
-        }
-
-        this.processo = processo;
-    }
-
-    public void atualizaDado(DadoSolicitadoDTO dado, Processo processo) {
+    public void atualizar(DadoSolicitadoDTO dado, Processo processo) {
         if(dado.obrigatorio() != null) {
             this.obrigatorio = dado.obrigatorio();
         }
@@ -59,11 +44,7 @@ public class DadoSolicitado {
         }
 
         if(dado.dado() != null) {
-            if(this.dado.getId().equals(dado.dado().id())) {
-                this.dado.atualizaDado(dado.dado());
-            } else {
-                this.dado = new Dado(dado.dado());
-            }
+            this.dado.atualizar(dado.dado());
         }
 
         this.processo = processo;

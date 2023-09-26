@@ -5,19 +5,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class CadastroOrganizacaoAMQPConfiguration {
+public class OrganizacaoCadastradaAMQPConfiguration {
     @Bean
     public Queue organicazaoCadastradaQueue() {
         return QueueBuilder.nonDurable("organizacao.cadastrada").build();
     }
 
     @Bean
-    public DirectExchange cadastrosDirectExchange() {
-        return ExchangeBuilder.directExchange("cadastros.ex").build();
+    public DirectExchange prospeccaoDirectExchange() {
+        return ExchangeBuilder.directExchange("prospeccao.ex").build();
     }
 
     @Bean
-    public Binding bindOrganizacaoCadastradaToCadastros() {
-        return BindingBuilder.bind(organicazaoCadastradaQueue()).to(cadastrosDirectExchange()).with("organizacao.cadastrada");
+    public Binding bindOrganizacaoCadastradaToProspeccao() {
+        return BindingBuilder.bind(organicazaoCadastradaQueue()).to(prospeccaoDirectExchange()).with("organizacao.cadastrada");
     }
 }

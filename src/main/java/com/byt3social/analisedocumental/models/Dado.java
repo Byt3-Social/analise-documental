@@ -5,13 +5,11 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DynamicInsert;
 
 @Entity(name = "Dado")
 @Table(name = "dados")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-@DynamicInsert
 @Getter
 public class Dado {
     @Id
@@ -27,17 +25,17 @@ public class Dado {
         this.padrao = body.padrao();
     }
 
-    public void atualizaDado(DadoDTO body) {
-        if(body.nome() != null) {
-            this.nome = body.nome();
+    public void atualizar(DadoDTO dadoDTO) {
+        if(dadoDTO.nome() != null) {
+            this.nome = dadoDTO.nome();
         }
 
-        if(body.tipo() != null) {
-            this.tipo = body.tipo();
+        if(dadoDTO.tipo() != null) {
+            this.tipo = dadoDTO.tipo();
         }
 
-        if(body.padrao() != null) {
-            this.padrao = body.padrao();
+        if(dadoDTO.padrao() != null) {
+            this.padrao = dadoDTO.padrao();
         }
     }
 }

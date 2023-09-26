@@ -5,14 +5,12 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DynamicInsert;
 
 @Entity(name = "Documento")
 @Table(name = "documentos")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Getter
-@DynamicInsert
 public class Documento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,13 +23,13 @@ public class Documento {
         this.padrao = body.padrao();
     }
 
-    public void atualizaDocumento(DocumentoDTO body) {
-        if(body.nome() != null) {
-            this.nome = body.nome();
+    public void atualizar(DocumentoDTO documentoDTO) {
+        if(documentoDTO.nome() != null) {
+            this.nome = documentoDTO.nome();
         }
 
-        if(body.padrao() != null) {
-            this.padrao = body.padrao();
+        if(documentoDTO.padrao() != null) {
+            this.padrao = documentoDTO.padrao();
         }
     }
 }

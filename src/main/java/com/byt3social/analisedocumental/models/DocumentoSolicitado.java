@@ -1,6 +1,5 @@
 package com.byt3social.analisedocumental.models;
 
-import com.byt3social.analisedocumental.dto.DocumentoSolicitadoDTO;
 import com.byt3social.analisedocumental.enums.StatusDocumentoSolicitado;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,8 +7,12 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.List;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.Date;
 
 @Entity(name = "DocumentoSolicitado")
 @Table(name = "documentos_solicitados")
@@ -20,16 +23,32 @@ public class DocumentoSolicitado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String url;
+    @Column(name = "caminho_s3")
+    @JsonProperty("caminho_s3")
+    private String caminhoS3;
+    @Column(name = "nome_arquivo_original")
+    @JsonProperty("nome_arquivo_original")
+    private String nomeArquivoOriginal;
+    @Column(name = "tamanho_arquivo")
+    @JsonProperty("tamanho_arquivo")
+    private BigInteger tamanhoArquivo;
     @Enumerated(value = EnumType.STRING)
     private StatusDocumentoSolicitado status;
     @JsonProperty("assinatura_digital")
     private String assinaturaDigital;
+    @CreationTimestamp
+    @Column(name = "created_at")
+    @JsonProperty("created_at")
+    private Date createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    @JsonProperty("updated_at")
+    private Date updatedAt;
     private Boolean obrigatorio;
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "documento_id")
     private Documento documento;
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "processo_id")
     @JsonBackReference
     private Processo processo;
@@ -41,51 +60,23 @@ public class DocumentoSolicitado {
         this.status = StatusDocumentoSolicitado.NAO_ENVIADO;
     }
 
-    public DocumentoSolicitado(DocumentoSolicitadoDTO documentoSolicitadoDTO, Processo processo, List<Documento> listaDocumentos) {
-        this.url = documentoSolicitadoDTO.url();
-        this.status = documentoSolicitadoDTO.status();
-        this.assinaturaDigital = documentoSolicitadoDTO.assinaturaDigital();
-        this.obrigatorio = documentoSolicitadoDTO.obrigatorio();
-
-        if(documentoSolicitadoDTO.documento().id() != null) {
-            this.documento = listaDocumentos.stream().filter(documentoComplementar -> documentoComplementar.getId().equals(documentoSolicitadoDTO.documento().id())).findFirst().get();
-        } else {
-            this.documento = new Documento(documentoSolicitadoDTO.documento());
-        }
-
-        this.processo = processo;
-    }
-
-    public void atualizaDocumentoSolicitado(DocumentoSolicitadoDTO documentoSolicitadoDTO, Processo processo) {
-        if(documentoSolicitadoDTO.url() != null) {
-            this.url = documentoSolicitadoDTO.url();
-        }
-
-        if(documentoSolicitadoDTO.status() != null) {
-            this.status = documentoSolicitadoDTO.status();
-        }
-
-        if(documentoSolicitadoDTO.assinaturaDigital() != null) {
-            this.assinaturaDigital = documentoSolicitadoDTO.assinaturaDigital();
-        }
-
-        if(documentoSolicitadoDTO.obrigatorio() != null) {
-            this.obrigatorio = documentoSolicitadoDTO.obrigatorio();
-        }
-
-        if(documentoSolicitadoDTO.documento() != null) {
-            if(this.documento.getId().equals(documentoSolicitadoDTO.documento().id())) {
-                this.documento.atualizaDocumento(documentoSolicitadoDTO.documento());
-            } else {
-                this.documento = new Documento(documentoSolicitadoDTO.documento());
-            }
-        }
-
-        this.processo = processo;
-    }
-
-    public void atualizarInformacoes(String pathDocumento) {
-        this.url = pathDocumento;
+    public void atualizar(String pathDocumento, String nomeArquivoOriginal, BigInteger tamanhoArquivo) {
+        this.caminhoS3 = pathDocumento;
+        this.nomeArquivoOriginal = nomeArquivoOriginal;
+        this.tamanhoArquivo = tamanhoArquivo;
         this.status = StatusDocumentoSolicitado.ENVIADO;
+        this.updatedAt = Date.from(Instant.now());
+    }
+
+    public void removerEnvio() {
+        this.caminhoS3 = null;
+        this.nomeArquivoOriginal = null;
+        this.tamanhoArquivo = null;
+        this.status = StatusDocumentoSolicitado.NAO_ENVIADO;
+        this.updatedAt = Date.from(Instant.now());
+    }
+
+    public void solicitarReenvio() {
+        this.status = StatusDocumentoSolicitado.PENDENTE_REENVIO;
     }
 }

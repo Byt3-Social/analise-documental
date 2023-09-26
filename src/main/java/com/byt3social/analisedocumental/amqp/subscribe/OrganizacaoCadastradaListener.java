@@ -8,12 +8,12 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CadastroOrganizacaoListener {
+public class OrganizacaoCadastradaListener {
     @Autowired
     private ProcessoService processoService;
 
     @RabbitListener(queues = "organizacao.cadastrada")
-    public void recebeCadastros(@Payload OrganizacaoDTO organizacao) {
-        processoService.criarProcesso(organizacao);
+    public void organizacaoCadastrada(@Payload OrganizacaoDTO organizacaoDTO) {
+        processoService.abrirProcesso(organizacaoDTO);
     }
 }

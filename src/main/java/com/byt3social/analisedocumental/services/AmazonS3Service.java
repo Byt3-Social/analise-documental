@@ -24,7 +24,7 @@ public class AmazonS3Service {
     private S3Presigner presigner;
     @Value("${com.byt3social.aws.main-bucket-name}")
     private String nomeBucketPrincipal;
-    
+
     public Boolean existeObjeto(String nomeObjeto) {
         ListObjectsRequest listObjects = ListObjectsRequest
                 .builder()
@@ -48,10 +48,10 @@ public class AmazonS3Service {
         s3Client.putObject(objectRequest, RequestBody.empty());
     }
 
-    public void armazenarArquivo(MultipartFile arquivo, String nomeArquivo) {
+    public void armazenarArquivo(MultipartFile arquivo, String caminhoArquivo) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(nomeBucketPrincipal)
-                .key(nomeArquivo)
+                .key(caminhoArquivo)
                 .build();
 
         try {
@@ -68,7 +68,7 @@ public class AmazonS3Service {
                 .build();
 
         GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(1))
+                .signatureDuration(Duration.ofSeconds(30))
                 .getObjectRequest(getObjectRequest)
                 .build();
 

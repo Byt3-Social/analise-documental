@@ -1,6 +1,6 @@
 package com.byt3social.analisedocumental.services;
 
-import com.byt3social.analisedocumental.exceptions.EmailFailedException;
+import com.byt3social.analisedocumental.exceptions.FailedToDeliverEmailException;
 import com.byt3social.analisedocumental.models.Processo;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -22,9 +22,9 @@ public class EmailService {
     @Value("${com.byt3social.app.domain}")
     private String appDomain;
 
-    public void notificaEmpresa(Processo processo) {
+    public void notificarOrganizacao(Processo processo) {
         MimeMessage message = mailSender.createMimeMessage();
-        String processoLink = appDomain + "/compliance/organizacoes/" + processo.getLink();
+        String processoLink = appDomain + "/compliance/organizacoes/" + processo.getUuid();
 
         try {
             message.setFrom(new InternetAddress("byt3social@gmail.com"));
@@ -38,10 +38,10 @@ public class EmailService {
             htmlTemplate = htmlTemplate.replace("${empresa_url}", processoLink);
 
             message.setContent(htmlTemplate, "text/html; charset=utf-8");
-        } catch (Exception e) {
-            throw new EmailFailedException();
-        }
 
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new FailedToDeliverEmailException();
+        }
     }
 }

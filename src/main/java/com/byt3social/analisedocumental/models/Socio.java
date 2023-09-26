@@ -24,24 +24,26 @@ public class Socio {
     @JsonBackReference
     private Processo processo;
 
-    public Socio(SocioDTO socio, Processo processo) {
-        this.nome = socio.nome();
-        this.cpf = socio.cpf();
-        this.qualificacao = socio.qualificacao();
+    public Socio(SocioDTO socioDTO, Processo processo) {
+        this.nome = socioDTO.nome();
+        this.cpf = socioDTO.cpf();
+        this.qualificacao = socioDTO.qualificacao();
         this.processo = processo;
     }
 
-    public void atualizaSocio(SocioDTO socio) {
-        if(socio.nome() != null) {
-            this.nome = socio.nome();
+    public void atualizar(SocioDTO socioDTO, Processo processo) {
+        if(socioDTO.nome() != null) {
+            this.nome = socioDTO.nome();
         }
 
-        if(socio.cpf() != null) {
-            this.cpf = socio.cpf();
+        if(socioDTO.cpf() != null) {
+            this.cpf = socioDTO.cpf();
         }
 
-        if(socio.qualificacao() != null) {
-            this.qualificacao = socio.qualificacao();
+        if(socioDTO.qualificacao() != null) {
+            this.qualificacao = socioDTO.qualificacao();
         }
+
+        this.processo = processo;
     }
 }

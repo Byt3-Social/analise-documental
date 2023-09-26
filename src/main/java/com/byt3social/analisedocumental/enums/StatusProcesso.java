@@ -1,8 +1,9 @@
 package com.byt3social.analisedocumental.enums;
 
 public enum StatusProcesso {
-    CRIADO,
+    ABERTO,
+    EM_ANALISE,
+    PENDENTE,
     APROVADO,
-    REPROVADO,
-    EM_ANALISE
+    REPROVADO
 }

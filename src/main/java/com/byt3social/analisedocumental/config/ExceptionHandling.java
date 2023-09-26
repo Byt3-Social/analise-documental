@@ -1,23 +1,21 @@
 package com.byt3social.analisedocumental.config;
 
-import com.byt3social.analisedocumental.exceptions.EmailFailedException;
+import com.byt3social.analisedocumental.dto.FieldErrorDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RestControllerAdvice
 public class ExceptionHandling {
-    @ExceptionHandler(EmailFailedException.class)
-    public ResponseEntity emailFailedException(EmailFailedException e) {
-        Map<String, String> response = new HashMap<>();
-        response.put("code", ((Integer) HttpStatus.INTERNAL_SERVER_ERROR.value()).toString());
-        response.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-        response.put("message", e.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity methodArgumentNotValidException(MethodArgumentNotValidException e) {
+        List<FieldError> errors = e.getFieldErrors();
 
-        return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity(errors.stream().map(FieldErrorDTO::new).toList(), HttpStatus.BAD_REQUEST);
     }
 }

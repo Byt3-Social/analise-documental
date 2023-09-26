@@ -12,12 +12,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AMQPConfiguration {
     @Bean
-    public RabbitAdmin criaRabbitAdmin(ConnectionFactory conexao) {
+    public RabbitAdmin criarRabbitAdmin(ConnectionFactory conexao) {
         return new RabbitAdmin(conexao);
     }
 
     @Bean
-    public ApplicationListener<ApplicationReadyEvent> inicializaAdmin(RabbitAdmin rabbitAdmin) {
+    public ApplicationListener<ApplicationReadyEvent> inicializarAdmin(RabbitAdmin rabbitAdmin) {
         return event -> rabbitAdmin.initialize();
     }
 

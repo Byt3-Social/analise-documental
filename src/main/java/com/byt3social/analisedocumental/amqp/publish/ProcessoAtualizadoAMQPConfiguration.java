@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ProcessoAbertoAMQPConfiguration {
+public class ProcessoAtualizadoAMQPConfiguration {
     @Bean
-    public DirectExchange processosDirectExchange() {
-        return new DirectExchange("processos.ex");
+    public DirectExchange complianceDirectExchange() {
+        return new DirectExchange("compliance.ex");
     }
 }
