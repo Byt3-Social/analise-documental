@@ -1,0 +1,7 @@
+ALTER TABLE documentos ADD COLUMN padrao BOOL NOT NULL DEFAULT 0;
+
+ALTER TABLE dados ADD COLUMN padrao BOOL NOT NULL DEFAULT 0;
+
+ALTER TABLE documentos_solicitados ADD COLUMN obrigatorio BOOL NOT NULL DEFAULT 0;
+
+ALTER TABLE dados_solicitados ADD COLUMN obrigatorio BOOL NOT NULL DEFAULT 0;
