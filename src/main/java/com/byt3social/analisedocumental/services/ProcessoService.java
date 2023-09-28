@@ -175,7 +175,7 @@ public class ProcessoService {
             throw new FileTypeNotSupportedException();
         }
 
-        String pastaProcesso = processo.getId() + "_" + processo.getCnpj() + "/";
+        String pastaProcesso = "processos/"+ processo.getId() + "_" + processo.getCnpj() + "/";
         String extensaoArquivo = FilenameUtils.getExtension(nomeArquivoOriginal);
         String nomeDocumento = processo.getCnpj() + " - " + documentoSolicitado.getDocumento().getNome() + "." +  extensaoArquivo;
         String caminhoArquivo = pastaProcesso + nomeDocumento;
