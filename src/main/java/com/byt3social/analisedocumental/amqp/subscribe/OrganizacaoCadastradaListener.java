@@ -12,7 +12,7 @@ public class OrganizacaoCadastradaListener {
     @Autowired
     private ProcessoService processoService;
 
-    @RabbitListener(queues = "organizacao.cadastrada")
+    @RabbitListener(queues = "organizacao.cadastrada.compliance")
     public void organizacaoCadastrada(@Payload OrganizacaoDTO organizacaoDTO) {
         processoService.abrirProcesso(organizacaoDTO);
     }

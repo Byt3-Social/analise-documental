@@ -8,16 +8,16 @@ import org.springframework.context.annotation.Configuration;
 public class OrganizacaoCadastradaAMQPConfiguration {
     @Bean
     public Queue organicazaoCadastradaQueue() {
-        return QueueBuilder.nonDurable("organizacao.cadastrada").build();
+        return QueueBuilder.nonDurable("organizacao.cadastrada.compliance").build();
     }
 
     @Bean
-    public DirectExchange prospeccaoDirectExchange() {
-        return ExchangeBuilder.directExchange("prospeccao.ex").build();
+    public FanoutExchange prospeccaoFanoutExchange() {
+        return ExchangeBuilder.fanoutExchange("prospeccao.ex").build();
     }
 
     @Bean
     public Binding bindOrganizacaoCadastradaToProspeccao() {
-        return BindingBuilder.bind(organicazaoCadastradaQueue()).to(prospeccaoDirectExchange()).with("organizacao.cadastrada");
+        return BindingBuilder.bind(organicazaoCadastradaQueue()).to(prospeccaoFanoutExchange());
     }
 }

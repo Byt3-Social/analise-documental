@@ -211,6 +211,6 @@ public class ProcessoService {
         organizacao.put("status_cadastro", processo.getStatus().toString());
         System.out.println(organizacao);
 
-        rabbitTemplate.convertAndSend("compliance.ex", "processo.atualizado", organizacao);
+        rabbitTemplate.convertAndSend("compliance.ex", "", organizacao);
     }
 }
