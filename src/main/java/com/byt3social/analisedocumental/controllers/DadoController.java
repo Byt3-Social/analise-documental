@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Optional;
 import java.util.List;
 
 @RestController
@@ -26,10 +26,16 @@ public class DadoController {
 
     @GetMapping("/dados/{id}")
     public ResponseEntity consultarDado(@PathVariable("id") Integer dadoID) {
-        Dado dado = dadoRepository.findById(dadoID).get();
+        Optional<Dado> optionalDado = dadoRepository.findById(dadoID);
 
-        return new ResponseEntity<>(dado, HttpStatus.OK);
+        if (optionalDado.isPresent()) {
+            Dado dado = optionalDado.get();
+            return new ResponseEntity<>(dado, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Dado não encontrado", HttpStatus.NOT_FOUND);
+        }
     }
+
 
     @PostMapping("/dados")
     @Transactional
@@ -42,17 +48,26 @@ public class DadoController {
 
     @PutMapping("/dados/{id}")
     @Transactional
-    public ResponseEntity atualizarDado(@PathVariable("id") Integer dadoID, @Valid @RequestBody DadoDTO dadoDTO) {
-        Dado dado = dadoRepository.findById(dadoID).get();
-        dado.atualizar(dadoDTO);
-
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> atualizarDado(@PathVariable("id") Integer dadoID, @Valid @RequestBody DadoDTO dadoDTO) {
+        Optional<Dado> optionalDado = dadoRepository.findById(dadoID);
+        
+        if (optionalDado.isPresent()) {
+            Dado dado = optionalDado.get();
+            dado.atualizar(dadoDTO);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
+
 
     @DeleteMapping("/dados/{id}")
     public ResponseEntity excluirDado(@PathVariable("id") Integer dadoID) {
-        dadoRepository.deleteById(dadoID);
-
-        return new ResponseEntity(HttpStatus.OK);
+        if (dadoRepository.existsById(dadoID)) {
+            dadoRepository.deleteById(dadoID);
+            return new ResponseEntity<>("Dado excluído com sucesso", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Dado não encontrado", HttpStatus.NOT_FOUND);
+        }
     }
 }

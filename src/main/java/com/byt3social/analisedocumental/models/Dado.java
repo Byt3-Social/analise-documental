@@ -38,4 +38,5 @@ public class Dado {
             this.padrao = dadoDTO.padrao();
         }
     }
+    
 }

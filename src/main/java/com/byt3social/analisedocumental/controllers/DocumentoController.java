@@ -11,9 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class DocumentoController {
@@ -31,9 +31,14 @@ public class DocumentoController {
 
     @GetMapping("/documentos/{id}")
     public ResponseEntity consultarDocumento(@PathVariable("id") Integer documentoID) {
-        Documento dado = documentoRepository.findById(documentoID).get();
+        Optional<Documento> documentoOptional = documentoRepository.findById(documentoID);
 
-        return new ResponseEntity<>(dado, HttpStatus.OK);
+        if (documentoOptional.isPresent()) {
+            Documento documento = documentoOptional.get();
+            return new ResponseEntity<>(documento, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/documentos")
@@ -48,18 +53,30 @@ public class DocumentoController {
     @PutMapping("/documentos/{id}")
     @Transactional
     public ResponseEntity alterarDocumento(@PathVariable("id") Integer documentoID, @Valid @RequestBody DocumentoDTO documentoDTO) {
-        Documento documento = documentoRepository.findById(documentoID).get();
-        documento.atualizar(documentoDTO);
+        Optional<Documento> documentoOptional = documentoRepository.findById(documentoID);
 
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        if (documentoOptional.isPresent()) {
+            Documento documento = documentoOptional.get();
+            documento.atualizar(documentoDTO);
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
     }
+
 
     @DeleteMapping("/documentos/{id}")
     public ResponseEntity excluirDocumento(@PathVariable("id") Integer documentoID) {
-        documentoRepository.deleteById(documentoID);
+        Optional<Documento> documentoOptional = documentoRepository.findById(documentoID);
 
-        return new ResponseEntity(HttpStatus.OK);
+        if (documentoOptional.isPresent()) {
+            documentoRepository.deleteById(documentoID);
+            return new ResponseEntity(HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
     }
+
 
     @GetMapping("/documentos-solicitados/{id}/reenvio")
     public ResponseEntity solicitarReenvioDocumentoSolicitado(@PathVariable("id") Integer documentoSolicitadoID) {
