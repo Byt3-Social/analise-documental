@@ -2,15 +2,15 @@ package com.byt3social.analisedocumental.models;
 
 import com.byt3social.analisedocumental.dto.DocumentoDTO;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity(name = "Documento")
 @Table(name = "documentos")
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Getter
+@Setter
 public class Documento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,12 +24,7 @@ public class Documento {
     }
 
     public void atualizar(DocumentoDTO documentoDTO) {
-        if(documentoDTO.nome() != null) {
-            this.nome = documentoDTO.nome();
-        }
-
-        if(documentoDTO.padrao() != null) {
-            this.padrao = documentoDTO.padrao();
-        }
+        this.nome = documentoDTO.nome();
+        this.padrao = documentoDTO.padrao();
     }
 }

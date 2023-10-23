@@ -2,6 +2,7 @@ package com.byt3social.analisedocumental.controllers;
 
 import com.byt3social.analisedocumental.dto.DocumentoDTO;
 import com.byt3social.analisedocumental.models.Documento;
+import com.byt3social.analisedocumental.models.DocumentoSolicitado;
 import com.byt3social.analisedocumental.repositories.DocumentoRepository;
 import com.byt3social.analisedocumental.services.ProcessoService;
 import jakarta.transaction.Transactional;
@@ -11,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,32 +77,31 @@ public class DocumentoController {
         }
     }
 
-
-    @GetMapping("/documentos-solicitados/{id}/reenvio")
+    @PostMapping("/documentos-solicitados/{id}/reenvio")
     public ResponseEntity solicitarReenvioDocumentoSolicitado(@PathVariable("id") Integer documentoSolicitadoID) {
         processoService.solicitarReenvioDocumentoSolicitado(documentoSolicitadoID);
 
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/documentos-solicitados/aws-s3")
-    public ResponseEntity enviarDocumentoSolicitado(@RequestParam MultipartFile documento, @RequestParam("documento_solicitado_id") Integer documentoSolicitadoID) {
-        processoService.enviarDocumentoSolicitadoNoProcesso(documentoSolicitadoID, documento);
+    @PostMapping("/documentos-solicitados/{id}/aws")
+    public ResponseEntity enviarDocumentoSolicitado(@RequestParam MultipartFile documento, @PathVariable("id") Integer documentoSolicitadoID) {
+        DocumentoSolicitado documentoSolicitado = processoService.enviarDocumentoSolicitadoNoProcesso(documentoSolicitadoID, documento);
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(documentoSolicitado, HttpStatus.OK);
     }
 
-    @GetMapping( "/documentos-solicitados/{documento}/aws-s3")
-    public ResponseEntity recuperarDocumentoSolicitado(@PathVariable("documento") Integer documentoSolicitradoID) {
+    @GetMapping( "/documentos-solicitados/{id}/aws")
+    public ResponseEntity recuperarDocumentoSolicitado(@PathVariable("id") Integer documentoSolicitradoID) {
         String urlArquivo = processoService.baixarDocumentoSolicitadoNoProcesso(documentoSolicitradoID);
 
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(urlArquivo)).build();
+        return new ResponseEntity(urlArquivo, HttpStatus.OK);
     }
 
-    @DeleteMapping("/documentos-solicitados/{documento}/aws-s3")
-    public ResponseEntity removerDocumentoEnviado(@PathVariable("documento") Integer documentoSolicitadoID) {
-        processoService.removerDocumentoSolicitadoEnviado(documentoSolicitadoID);
+    @DeleteMapping("/documentos-solicitados/{id}/aws")
+    public ResponseEntity removerDocumentoEnviado(@PathVariable("id") Integer documentoSolicitadoID) {
+        DocumentoSolicitado documentoSolicitado = processoService.removerDocumentoSolicitadoEnviado(documentoSolicitadoID);
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(documentoSolicitado, HttpStatus.OK);
     }
 }

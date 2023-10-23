@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record DadoDTO(
-        Integer id,
         @NotBlank(message = "nome não pode ser vazio")
         String nome,
         @NotBlank(message = "tipo não pode ser vazio")

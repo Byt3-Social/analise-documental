@@ -3,15 +3,15 @@ package com.byt3social.analisedocumental.models;
 import com.byt3social.analisedocumental.dto.SocioDTO;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity(name = "Socio")
 @Table(name = "socios")
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Getter
+@Setter
 public class Socio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,18 +32,9 @@ public class Socio {
     }
 
     public void atualizar(SocioDTO socioDTO, Processo processo) {
-        if(socioDTO.nome() != null) {
-            this.nome = socioDTO.nome();
-        }
-
-        if(socioDTO.cpf() != null) {
-            this.cpf = socioDTO.cpf();
-        }
-
-        if(socioDTO.qualificacao() != null) {
-            this.qualificacao = socioDTO.qualificacao();
-        }
-
+        this.nome = socioDTO.nome();
+        this.cpf = socioDTO.cpf();
+        this.qualificacao = socioDTO.qualificacao();
         this.processo = processo;
     }
 }

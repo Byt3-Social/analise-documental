@@ -54,6 +54,7 @@ public class DadoController {
         if (optionalDado.isPresent()) {
             Dado dado = optionalDado.get();
             dado.atualizar(dadoDTO);
+
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -65,6 +66,7 @@ public class DadoController {
     public ResponseEntity excluirDado(@PathVariable("id") Integer dadoID) {
         if (dadoRepository.existsById(dadoID)) {
             dadoRepository.deleteById(dadoID);
+
             return new ResponseEntity<>("Dado excluído com sucesso", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Dado não encontrado", HttpStatus.NOT_FOUND);
