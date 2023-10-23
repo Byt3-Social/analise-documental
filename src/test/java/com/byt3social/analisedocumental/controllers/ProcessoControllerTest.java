@@ -1,4 +1,13 @@
 package com.byt3social.analisedocumental.controllers;
+
+import com.byt3social.analisedocumental.dto.EnderecoDTO;
+import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
+import com.byt3social.analisedocumental.dto.ProcessoDTO;
+import com.byt3social.analisedocumental.dto.ResponsavelDTO;
+import com.byt3social.analisedocumental.enums.StatusProcesso;
+import com.byt3social.analisedocumental.models.Processo;
+import com.byt3social.analisedocumental.services.ProcessoService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -7,43 +16,21 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.http.HttpStatus;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import com.byt3social.analisedocumental.services.ProcessoService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.byt3social.analisedocumental.dto.DadoDTO;
-import com.byt3social.analisedocumental.dto.DadoSolicitadoDTO;
-import com.byt3social.analisedocumental.dto.DocumentoDTO;
-import com.byt3social.analisedocumental.dto.DocumentoSolicitadoDTO;
-import com.byt3social.analisedocumental.dto.EnderecoDTO;
-import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
-import com.byt3social.analisedocumental.dto.ProcessoDTO;
-import com.byt3social.analisedocumental.dto.ResponsavelDTO;
-import com.byt3social.analisedocumental.dto.SocioDTO;
-import com.byt3social.analisedocumental.enums.StatusDocumentoSolicitado;
-import com.byt3social.analisedocumental.enums.StatusProcesso;
-import com.byt3social.analisedocumental.models.Processo;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -142,12 +129,11 @@ public class ProcessoControllerTest {
                 "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
         ProcessoDTO updatedProcessoDTO = new ProcessoDTO(
-            processo.getId(),  
-            1, "UpdatedCnpj", new Date(), "UpdatedNomeEmpresarial",
+            LocalDate.now(), "UpdatedNomeEmpresarial",
             "UpdatedNomeFantasia", new EnderecoDTO(
                 "UpdatedRua", "UpdatedNumero", "UpdatedBairro", "UpdatedComplemento", "UpdatedCidade", "UpdatedEstado"
             ),
-            "UpdatedPorte", "updated@email.com", "9876543210", null, null, null, null, null, null, null, null, null
+            "UpdatedPorte", "updated@email.com", "9876543210", null, null, null, null, null, null
         );
 
         mockMvc.perform(put("/processos/{id}/atualizar", 1)  
@@ -163,24 +149,18 @@ public class ProcessoControllerTest {
     
 
     ProcessoDTO processoDTO = new ProcessoDTO(
-        1, 
-        1, 
-        "12345678901234", 
-        new Date(),
+        LocalDate.now(),
         "Nome Empresarial", 
         "Nome Fantasia", 
         new EnderecoDTO("Rua", "Numero", "Bairro", "Complemento", "Cidade", "Estado"), 
         "Porte", 
         "nome@empresa.com",
         "1234567890",
-        null,
-        null, 
-        StatusProcesso.APROVADO, 
+        StatusProcesso.APROVADO,
         new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"),
-        "uuid123", 
+        "uuid123",
         "Feedback",
-        null, 
-        null, 
+        null,
         null
     );
 

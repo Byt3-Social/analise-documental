@@ -1,23 +1,26 @@
 package com.byt3social.analisedocumental.controllers;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.byt3social.analisedocumental.dto.DadoDTO;
 import com.byt3social.analisedocumental.models.Dado;
 import com.byt3social.analisedocumental.repositories.DadoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,7 +48,7 @@ public class DadoControllerTest {
 
     @Test
     public void testConsultarDado() throws Exception {
-        Dado dado = new Dado(new DadoDTO(1, "TestDado", "TEXT", true));
+        Dado dado = new Dado(new DadoDTO("TestDado", "TEXT", true));
         dadoRepository.save(dado);
 
         mockMvc.perform(get("/dados/{id}", dado.getId()))
@@ -72,7 +75,7 @@ public class DadoControllerTest {
     @Test
     @DisplayName("Deve retornar status 201, já que os valores são válidos")
     public void testCadastrarDado2() throws Exception {
-        DadoDTO dadoDTO = new DadoDTO(null, "NewDado", "TEXT", true);
+        DadoDTO dadoDTO = new DadoDTO("NewDado", "TEXT", true);
 
         mockMvc.perform(post("/dados")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +86,7 @@ public class DadoControllerTest {
     @Test
     @DisplayName("Deve retornar status 400, já que o tipo é inválido")
     public void testCadastrarDado3() throws Exception {
-        DadoDTO dadoDTO = new DadoDTO(null, "NewDado", "OUTRO", true);
+        DadoDTO dadoDTO = new DadoDTO("NewDado", "OUTRO", true);
 
         mockMvc.perform(post("/dados")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,10 +96,10 @@ public class DadoControllerTest {
 
     @Test
     public void testAtualizarDado() throws Exception {
-        Dado dado = new Dado(new DadoDTO(1, "TestDado", "TEXT", true));
+        Dado dado = new Dado(new DadoDTO("TestDado", "TEXT", true));
         dadoRepository.save(dado);
 
-        DadoDTO updatedDadoDTO = new DadoDTO(null, "UpdatedDado", "TEXTAREA", false);
+        DadoDTO updatedDadoDTO = new DadoDTO("UpdatedDado", "TEXTAREA", false);
 
         mockMvc.perform(put("/dados/{id}", dado.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +116,7 @@ public class DadoControllerTest {
     @Test
     @DisplayName("Deve retornar status 404 (Not Found) ao tentar atualizar um dado que não existe")
     public void testAtualizarDadoInexistente() throws Exception {
-        DadoDTO updatedDadoDTO = new DadoDTO(null, "UpdatedDado", "TEXTAREA", false);
+        DadoDTO updatedDadoDTO = new DadoDTO("UpdatedDado", "TEXTAREA", false);
     
         mockMvc.perform(put("/dados/{id}", 12345) 
                 .contentType(MediaType.APPLICATION_JSON)
@@ -122,7 +125,7 @@ public class DadoControllerTest {
     }
     @Test
     public void testExcluirDado() throws Exception {
-        Dado dado = new Dado(new DadoDTO(1, "TestDado", "TEXT", true));
+        Dado dado = new Dado(new DadoDTO("TestDado", "TEXT", true));
         dadoRepository.save(dado);
 
         mockMvc.perform(delete("/dados/{id}", dado.getId()))

@@ -1,5 +1,11 @@
 package com.byt3social.analisedocumental.controllers;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+
+import com.byt3social.analisedocumental.dto.DocumentoDTO;
+import com.byt3social.analisedocumental.models.Documento;
+import com.byt3social.analisedocumental.repositories.DocumentoRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -8,15 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import com.byt3social.analisedocumental.repositories.DocumentoRepository;
-import com.byt3social.analisedocumental.dto.DocumentoDTO;
-import com.byt3social.analisedocumental.models.Documento;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,7 +46,7 @@ public class DocumentoControllerTest {
 
     @Test
     public void testConsultarDocumento() throws Exception {
-        Documento documento = new Documento(new DocumentoDTO(1, "TestDado", true));
+        Documento documento = new Documento(new DocumentoDTO("TestDado", true));
         documentoRepository.save(documento);
 
         mockMvc.perform(get("/documentos/{id}", documento.getId()))
@@ -64,7 +65,7 @@ public class DocumentoControllerTest {
     @Test
     @DisplayName("Deve retornar status 201, já que os valores são válidos")
     public void testCadastrarDocumento() throws Exception {
-        DocumentoDTO documentoDTO = new DocumentoDTO(null, "NewDocumento", true);
+        DocumentoDTO documentoDTO = new DocumentoDTO("NewDocumento", true);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/documentos")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +76,7 @@ public class DocumentoControllerTest {
     @Test
     @DisplayName("Deve retornar status 400, já que os valores são nulos")
     public void testCadastrarDocumentoComValoresNulos() throws Exception {
-        DocumentoDTO documentoDTO = new DocumentoDTO(null, null, null);
+        DocumentoDTO documentoDTO = new DocumentoDTO(null, null);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/documentos")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -87,10 +88,10 @@ public class DocumentoControllerTest {
     @Test
     @DisplayName("Deve retornar status 204 após a alteração de um documento existente")
     public void testAlterarDocumento() throws Exception {
-        Documento documento = new Documento(new DocumentoDTO(1, "TestDocumento", true));
+        Documento documento = new Documento(new DocumentoDTO("TestDocumento", true));
         documentoRepository.save(documento);
 
-        DocumentoDTO updatedDocumentoDTO = new DocumentoDTO(null, "UpdatedDocumento", false);
+        DocumentoDTO updatedDocumentoDTO = new DocumentoDTO("UpdatedDocumento", false);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/documentos/{id}", documento.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +102,7 @@ public class DocumentoControllerTest {
     @Test
     @DisplayName("Deve retornar status 404 (Not Found) ao tentar alterar um documento que não existe")
     public void testAlterarDocumentoInexistente() throws Exception {
-        DocumentoDTO updatedDocumentoDTO = new DocumentoDTO(null, "UpdatedDocumento", false);
+        DocumentoDTO updatedDocumentoDTO = new DocumentoDTO("UpdatedDocumento", false);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/documentos/{id}", 12345)  
                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +113,7 @@ public class DocumentoControllerTest {
     @Test
     @DisplayName("Deve retornar status 200 após a exclusão de um documento existente")
     public void testExcluirDocumento() throws Exception {
-        Documento documento = new Documento(new DocumentoDTO(1, "TestDocumento", true));
+        Documento documento = new Documento(new DocumentoDTO("TestDocumento", true));
         documentoRepository.save(documento);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/documentos/{id}", documento.getId()))

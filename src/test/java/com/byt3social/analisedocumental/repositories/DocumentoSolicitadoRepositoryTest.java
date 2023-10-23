@@ -1,18 +1,18 @@
 package com.byt3social.analisedocumental.repositories;
-import com.byt3social.analisedocumental.models.DocumentoSolicitado;
-import com.byt3social.analisedocumental.models.Documento;
-import com.byt3social.analisedocumental.models.Processo;
+
 import com.byt3social.analisedocumental.dto.DocumentoDTO;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.byt3social.analisedocumental.enums.StatusDocumentoSolicitado;
+import com.byt3social.analisedocumental.models.Documento;
+import com.byt3social.analisedocumental.models.DocumentoSolicitado;
+import com.byt3social.analisedocumental.models.Processo;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+
 import java.math.BigInteger;
-import com.byt3social.analisedocumental.enums.StatusDocumentoSolicitado;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -22,7 +22,7 @@ class DocumentoSolicitadoRepositoryTest {
     @Test
     public void testCriarDocumentoSolicitado() {
 
-        Documento documento = new Documento(new DocumentoDTO(null, "Nome Documento", true));
+        Documento documento = new Documento(new DocumentoDTO("Nome Documento", true));
         Processo processo = new Processo();
 
         DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(documento, processo);
@@ -35,7 +35,7 @@ class DocumentoSolicitadoRepositoryTest {
     @Test
     public void testAtualizarDocumentoSolicitado() {
 
-        Documento documento = new Documento(new DocumentoDTO(null, "Nome Documento", true));
+        Documento documento = new Documento(new DocumentoDTO("Nome Documento", true));
         Processo processo = new Processo();
         DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(documento, processo);
 
@@ -51,7 +51,7 @@ class DocumentoSolicitadoRepositoryTest {
     @Test
     public void testRemoverEnvioDocumentoSolicitado() {
 
-        Documento documento = new Documento(new DocumentoDTO(null, "Nome Documento", true));
+        Documento documento = new Documento(new DocumentoDTO("Nome Documento", true));
         Processo processo = new Processo();
         DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(documento, processo);
 
@@ -68,7 +68,7 @@ class DocumentoSolicitadoRepositoryTest {
     @Test
     public void testSolicitarReenvioDocumentoSolicitado() {
 
-        Documento documento = new Documento(new DocumentoDTO(null, "Nome Documento", true));
+        Documento documento = new Documento(new DocumentoDTO("Nome Documento", true));
         Processo processo = new Processo();
         DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(documento, processo);
 

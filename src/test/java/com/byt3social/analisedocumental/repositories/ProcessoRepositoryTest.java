@@ -1,23 +1,22 @@
 package com.byt3social.analisedocumental.repositories;
-import com.byt3social.analisedocumental.models.Dado;
-import com.byt3social.analisedocumental.models.DadoSolicitado;
-import com.byt3social.analisedocumental.models.Documento;
-import com.byt3social.analisedocumental.models.DocumentoSolicitado;
-import com.byt3social.analisedocumental.models.Processo;
+
 import com.byt3social.analisedocumental.dto.EnderecoDTO;
-import com.byt3social.analisedocumental.dto.ProcessoDTO;
 import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
+import com.byt3social.analisedocumental.dto.ProcessoDTO;
 import com.byt3social.analisedocumental.dto.ResponsavelDTO;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import com.byt3social.analisedocumental.enums.StatusProcesso;
+import com.byt3social.analisedocumental.models.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import com.byt3social.analisedocumental.enums.StatusProcesso;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -47,12 +46,11 @@ class ProcessoRepositoryTest {
                 "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
         ProcessoDTO updatedProcessoDTO = new ProcessoDTO(
-            processo.getId(),  
-            1, "UpdatedCnpj", new Date(), "UpdatedNomeEmpresarial",
+            LocalDate.now(), "UpdatedNomeEmpresarial",
             "UpdatedNomeFantasia", new EnderecoDTO(
                 "UpdatedRua", "UpdatedNumero", "UpdatedBairro", "UpdatedComplemento", "UpdatedCidade", "UpdatedEstado"
             ),
-            "UpdatedPorte", "updated@email.com", "9876543210", null, null, null, null, null, null, null, null, null
+            "UpdatedPorte", "updated@email.com", "9876543210", null, null, null, null, null, null
         );
 
         processo.atualizar(updatedProcessoDTO);

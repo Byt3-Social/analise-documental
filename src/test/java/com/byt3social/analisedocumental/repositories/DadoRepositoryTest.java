@@ -1,13 +1,13 @@
 package com.byt3social.analisedocumental.repositories;
-import com.byt3social.analisedocumental.models.Dado;
+
 import com.byt3social.analisedocumental.dto.DadoDTO;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.byt3social.analisedocumental.models.Dado;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -16,7 +16,7 @@ class DadoRepositoryTest {
 
     @Test
     public void testCriarDado() {
-        DadoDTO dadoDTO = new DadoDTO(null,"nome do dado", "tipo do dado", true);
+        DadoDTO dadoDTO = new DadoDTO("nome do dado", "tipo do dado", true);
         Dado dado = new Dado(dadoDTO);
 
         assertEquals("nome do dado", dado.getNome());
@@ -26,9 +26,9 @@ class DadoRepositoryTest {
     @Test
     public void testAtualizarDado() {
 
-        DadoDTO initialDadoDTO = new DadoDTO(null, "Nome Inicial", "Tipo Inicial", true);
+        DadoDTO initialDadoDTO = new DadoDTO("Nome Inicial", "Tipo Inicial", true);
         Dado dado = new Dado(initialDadoDTO);
-        DadoDTO updatedDadoDTO = new DadoDTO(null, "Nome Atualizado", "Tipo Atualizado", false);
+        DadoDTO updatedDadoDTO = new DadoDTO("Nome Atualizado", "Tipo Atualizado", false);
 
         dado.atualizar(updatedDadoDTO);
 
