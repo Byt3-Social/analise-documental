@@ -27,7 +27,7 @@ class ProcessoRepositoryTest {
     public void testCriarProcesso() {
 
         OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
+                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
     
         assertNotNull(processo);
@@ -43,7 +43,7 @@ class ProcessoRepositoryTest {
     public void testAtualizarProcesso() {
 
         OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
+                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
         ProcessoDTO updatedProcessoDTO = new ProcessoDTO(
             LocalDate.now(), "UpdatedNomeEmpresarial",
@@ -66,7 +66,7 @@ class ProcessoRepositoryTest {
     public void testVincularDadosSolicitados() {
 
         Processo processo = new Processo(new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-            "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321")));
+            "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321")));
         List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
         DadoSolicitado dadoSolicitado1 = new DadoSolicitado(new Dado(), processo);
         DadoSolicitado dadoSolicitado2 = new DadoSolicitado(new Dado(), processo);
@@ -82,7 +82,7 @@ class ProcessoRepositoryTest {
     public void testVincularDocumentosSolicitados() {
 
         Processo processo = new Processo(new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-            "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321")));
+            "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321")));
         List<DocumentoSolicitado> documentosSolicitados = new ArrayList<>();
         DocumentoSolicitado documentoSolicitado1 = new DocumentoSolicitado(new Documento(), processo);
         DocumentoSolicitado documentoSolicitado2 = new DocumentoSolicitado(new Documento(), processo);

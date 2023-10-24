@@ -102,10 +102,6 @@ public class Processo {
         this.telefone = processoDTO.telefone();
         this.status = processoDTO.status();
 
-        if(processoDTO.responsavel() != null) {
-            this.responsavel = new Responsavel(processoDTO.responsavel());
-        }
-
         this.uuid = processoDTO.uuid();
         this.feedback = processoDTO.feedback();
     }

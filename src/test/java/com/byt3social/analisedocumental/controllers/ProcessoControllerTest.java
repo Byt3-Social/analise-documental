@@ -67,7 +67,7 @@ public class ProcessoControllerTest {
         int idProcesso = 1;
         
         OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
+                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
         processo.setId(idProcesso);
 
@@ -113,7 +113,7 @@ public class ProcessoControllerTest {
     public void testAbrirProcesso() throws Exception {
 
         OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
+                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
 
         mockMvc.perform(post("/processos")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +126,7 @@ public class ProcessoControllerTest {
     public void testSalvarProcesso() throws Exception {
 
         OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"));
+                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
         ProcessoDTO updatedProcessoDTO = new ProcessoDTO(
             LocalDate.now(), "UpdatedNomeEmpresarial",
@@ -157,7 +157,7 @@ public class ProcessoControllerTest {
         "nome@empresa.com",
         "1234567890",
         StatusProcesso.APROVADO,
-        new ResponsavelDTO("Responsavel Nome", "responsavel@empresa.com", "987654321"),
+        new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"),
         "uuid123",
         "Feedback",
         null,

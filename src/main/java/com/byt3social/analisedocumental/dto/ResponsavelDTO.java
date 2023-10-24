@@ -8,6 +8,9 @@ public record ResponsavelDTO(
         @NotBlank(message = "Campo obrigatório")
         String nome,
         @NotBlank(message = "Campo obrigatório")
+        @Pattern(regexp = "\\d{11}", message = "Campo inválido")
+        String cpf,
+        @NotBlank(message = "Campo obrigatório")
         @Email(message = "Campo inválido")
         String email,
         @NotBlank(message = "Campo obrigatório")

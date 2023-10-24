@@ -16,6 +16,8 @@ import lombok.Setter;
 public class Responsavel {
     @Column(name = "nome_responsavel")
     private String nome;
+    @Column(name = "cpf_responsavel")
+    private String cpf;
     @Column(name = "email_responsavel")
     private String email;
     @Column(name = "telefone_responsavel")
@@ -25,5 +27,6 @@ public class Responsavel {
         this.nome = responsavel.nome();
         this.email = responsavel.email();
         this.telefone = responsavel.telefone();
+        this.cpf = responsavel.cpf();
     }
 }

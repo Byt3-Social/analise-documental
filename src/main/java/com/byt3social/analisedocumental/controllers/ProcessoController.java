@@ -1,6 +1,7 @@
 package com.byt3social.analisedocumental.controllers;
 
 import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
+import com.byt3social.analisedocumental.dto.PDSignProcessoDTO;
 import com.byt3social.analisedocumental.dto.ProcessoDTO;
 import com.byt3social.analisedocumental.models.DadoSolicitado;
 import com.byt3social.analisedocumental.models.DocumentoSolicitado;
@@ -38,6 +39,13 @@ public class ProcessoController {
         Processo processo = processoService.consultarProcesso(processoID);
 
         return new ResponseEntity<>(processo, HttpStatus.OK);
+    }
+
+    @GetMapping("/processos/{id}/pdsign")
+    public ResponseEntity consultarProcessoPDSign(@PathVariable("id") Integer processoID) {
+        List<PDSignProcessoDTO> pdSignProcessoDTO = processoService.consultarProcessoPDSign(processoID);
+
+        return new ResponseEntity<>(pdSignProcessoDTO, HttpStatus.OK);
     }
 
     @PostMapping("/processos")

@@ -31,13 +31,17 @@ public class DocumentoSolicitado {
     @Enumerated(value = EnumType.STRING)
     private StatusDocumentoSolicitado status;
     private String assinaturaDigital;
+    private Boolean obrigatorio;
+    @Column(name = "pdsign_processo_id")
+    private String pdsignProcessoId;
+    @Column(name = "pdsign_documento_id")
+    private String pdsignDocumentoId;
     @CreationTimestamp
     @Column(name = "created_at")
     private Date createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
-    private Boolean obrigatorio;
     @ManyToOne
     @JoinColumn(name = "documento_id")
     private Documento documento;
@@ -51,6 +55,15 @@ public class DocumentoSolicitado {
         this.documento = documento;
         this.processo = novoProcesso;
         this.status = StatusDocumentoSolicitado.NAO_ENVIADO;
+    }
+
+    public DocumentoSolicitado(Documento documento, Processo novoProcesso, String processoPdSignId, String documentoPdSignId) {
+        this.obrigatorio = true;
+        this.documento = documento;
+        this.processo = novoProcesso;
+        this.status = StatusDocumentoSolicitado.NAO_ENVIADO;
+        this.pdsignDocumentoId = documentoPdSignId;
+        this.pdsignProcessoId = processoPdSignId;
     }
 
     public void atualizar(String pathDocumento, String nomeArquivoOriginal, BigInteger tamanhoArquivo) {

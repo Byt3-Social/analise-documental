@@ -1,9 +1,6 @@
 package com.byt3social.analisedocumental.services;
 
-import com.byt3social.analisedocumental.dto.DadoSolicitadoDTO;
-import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
-import com.byt3social.analisedocumental.dto.ProcessoDTO;
-import com.byt3social.analisedocumental.dto.SocioDTO;
+import com.byt3social.analisedocumental.dto.*;
 import com.byt3social.analisedocumental.enums.StatusProcesso;
 import com.byt3social.analisedocumental.exceptions.DadoNotFoundException;
 import com.byt3social.analisedocumental.exceptions.DocumentoNotFoundException;
@@ -20,6 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ProcessoService {
@@ -39,6 +39,8 @@ public class ProcessoService {
     private RabbitTemplate rabbitTemplate;
     @Autowired
     private AmazonS3Service amazonS3Service;
+    @Autowired
+    private PDSignService pdSignService;
 
     @Transactional
     public void abrirProcesso(OrganizacaoDTO organizacaoDTO) {
@@ -51,7 +53,9 @@ public class ProcessoService {
         List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
 
         for (Documento documento : documentos) {
-            documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso));
+            String processoPdSignId = pdSignService.criarProcesso(organizacaoDTO.responsavel());
+            String documentoPdSignId = pdSignService.criarDocumento(processoPdSignId, documento.getNome());
+            documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso, processoPdSignId, documentoPdSignId));
         }
 
         for (Dado dado : dados) {
@@ -204,6 +208,13 @@ public class ProcessoService {
 
         documentoSolicitado.atualizar(caminhoArquivo, nomeArquivoOriginal, tamanhoArquivo);
 
+        if(documentoSolicitado.getDocumento().getPadrao()) {
+            pdSignService.uploadDocumento(documento, documentoSolicitado.getPdsignProcessoId(), documentoSolicitado.getPdsignDocumentoId());
+
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            executorService.schedule(new PDSign(pdSignService, documentoSolicitado, executorService), 5, TimeUnit.SECONDS);
+        }
+
         return documentoSolicitado;
     }
 
@@ -240,5 +251,38 @@ public class ProcessoService {
 
     public List<Processo> consultarProcessosOrganizacao(Integer organizacaoId) {
         return processoRepository.findByCadastroId(organizacaoId, Sort.by(Sort.Direction.ASC, "status"));
+    }
+
+    public List<PDSignProcessoDTO> consultarProcessoPDSign(Integer processoId) {
+        Processo processo = processoRepository.findById(processoId).get();
+        PDSignProcessosDTO pdSignProcessosDTO = pdSignService.buscarProcessosPDSign();
+
+        List<PDSignProcessoDTO> pdSignProcessoDTOList = new ArrayList<>();
+
+        PDSignProcessoDTO pdSignProcesso;
+        for(DocumentoSolicitado documentoSolicitado : processo.getDocumentosSolicitados()) {
+            pdSignProcesso = pdSignProcessosDTO.processes().stream().filter(pdSignProcessoDTO -> pdSignProcessoDTO.id().equals(documentoSolicitado.getPdsignProcessoId())).findFirst().get();
+
+            pdSignProcessoDTOList.add(pdSignProcesso);
+        }
+
+        return pdSignProcessoDTOList;
+    }
+
+    public class PDSign implements Runnable {
+        private DocumentoSolicitado documentoSolicitado;
+        private PDSignService pdSignService;
+        private ScheduledExecutorService executorService;
+
+        public PDSign(PDSignService pdSignService, DocumentoSolicitado documentoSolicitado, ScheduledExecutorService executorService) {
+            this.documentoSolicitado = documentoSolicitado;
+            this.pdSignService = pdSignService;
+            this.executorService = executorService;
+        }
+
+        @Override
+        public void run() {
+            pdSignService.updateProcesso(documentoSolicitado.getPdsignProcessoId());
+        }
     }
 }
