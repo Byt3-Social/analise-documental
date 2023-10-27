@@ -1,23 +1,25 @@
 package com.byt3social.analisedocumental.models;
 
-import com.byt3social.analisedocumental.dto.*;
+import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
+import com.byt3social.analisedocumental.dto.ProcessoDTO;
 import com.byt3social.analisedocumental.enums.StatusProcesso;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity(name = "Processo")
 @Table(name = "processos")
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Getter
 @Setter
@@ -26,17 +28,14 @@ public class Processo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "cadastro_id")
-    @JsonProperty("cadastro_id")
     private Integer cadastroId;
     private String cnpj;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "data_abertura")
-    @JsonProperty("data_abertura")
-    private Date dataAbertura;
+    private LocalDate dataAbertura;
     @Column(name = "nome_empresarial")
-    @JsonProperty("nome_empresarial")
     private String nomeEmpresarial;
     @Column(name = "nome_fantasia")
-    @JsonProperty("nome_fantasia")
     private String nomeFantasia;
     private String porte;
     @Embedded
@@ -45,12 +44,10 @@ public class Processo {
     private String telefone;
     @CreationTimestamp
     @Column(name = "created_at")
-    @JsonProperty("created_at")
     private Timestamp createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
-    @JsonProperty("updated_at")
-    private Timestamp dataAtualizacao;
+    private Timestamp updatedAt;
     @Enumerated(value = EnumType.STRING)
     private StatusProcesso status;
     @Embedded
@@ -62,11 +59,9 @@ public class Processo {
     private List<Socio> socios = new ArrayList<>();
     @OneToMany(mappedBy = "processo", fetch = FetchType.LAZY)
     @JsonManagedReference
-    @JsonProperty("documentos_solicitados")
     private List<DocumentoSolicitado> documentosSolicitados = new ArrayList<>();
     @OneToMany(mappedBy = "processo", fetch = FetchType.LAZY)
     @JsonManagedReference
-    @JsonProperty("dados_solicitados")
     private List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
 
     public Processo(OrganizacaoDTO organizacaoDTO) {
@@ -74,7 +69,9 @@ public class Processo {
         this.cnpj = organizacaoDTO.cnpj();
         this.nomeEmpresarial = organizacaoDTO.nome();
         this.email = organizacaoDTO.email();
+        this.telefone = organizacaoDTO.telefone();
         this.responsavel = new Responsavel(organizacaoDTO.responsavel());
+        this.endereco = new Endereco();
         this.status = StatusProcesso.ABERTO;
         this.uuid = UUID.randomUUID().toString();
     }
@@ -88,52 +85,28 @@ public class Processo {
     }
 
     public void atualizar(ProcessoDTO processoDTO) {
-        if(processoDTO.cnpj() != null) {
-            this.cnpj = processoDTO.cnpj();
-        }
-
-        if(processoDTO.dataAbertura() != null) {
-            this.dataAbertura = processoDTO.dataAbertura();
-        }
+        this.dataAbertura = processoDTO.dataAbertura();
 
         if(processoDTO.nomeEmpresarial() != null) {
             this.nomeEmpresarial = processoDTO.nomeEmpresarial();
         }
 
-        if(processoDTO.nomeFantasia() != null) {
-            this.nomeFantasia = processoDTO.nomeFantasia();
-        }
+        this.nomeFantasia = processoDTO.nomeFantasia();
 
         if(processoDTO.endereco() != null) {
             this.endereco = new Endereco(processoDTO.endereco());
         }
 
-        if(processoDTO.porte() != null) {
-            this.porte = processoDTO.porte();
-        }
+        this.porte = processoDTO.porte();
+        this.email = processoDTO.email();
+        this.telefone = processoDTO.telefone();
+        this.status = processoDTO.status();
 
-        if(processoDTO.email() != null) {
-            this.email = processoDTO.email();
-        }
+        this.uuid = processoDTO.uuid();
+        this.feedback = processoDTO.feedback();
+    }
 
-        if(processoDTO.telefone() != null) {
-            this.telefone = processoDTO.telefone();
-        }
-
-        if(processoDTO.status() != null) {
-            this.status = processoDTO.status();
-        }
-
-        if(processoDTO.responsavel() != null) {
-            this.responsavel = new Responsavel(processoDTO.responsavel());
-        }
-
-        if(processoDTO.uuid() != null) {
-            this.uuid = processoDTO.uuid();
-        }
-
-        if(processoDTO.feedback() != null) {
-            this.feedback = processoDTO.feedback();
-        }
+    public void atualizarStatus(StatusProcesso status) {
+        this.status = status;
     }
 }

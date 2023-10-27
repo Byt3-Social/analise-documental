@@ -1,9 +1,7 @@
 package com.byt3social.analisedocumental.services;
 
-import com.byt3social.analisedocumental.dto.DadoSolicitadoDTO;
-import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
-import com.byt3social.analisedocumental.dto.ProcessoDTO;
-import com.byt3social.analisedocumental.dto.SocioDTO;
+import com.byt3social.analisedocumental.dto.*;
+import com.byt3social.analisedocumental.enums.StatusProcesso;
 import com.byt3social.analisedocumental.exceptions.DadoNotFoundException;
 import com.byt3social.analisedocumental.exceptions.DocumentoNotFoundException;
 import com.byt3social.analisedocumental.exceptions.FileTypeNotSupportedException;
@@ -13,14 +11,15 @@ import jakarta.transaction.Transactional;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ProcessoService {
@@ -37,11 +36,11 @@ public class ProcessoService {
     @Autowired
     private SocioRepository socioRepository;
     @Autowired
-    private EmailService emailService;
-    @Autowired
     private RabbitTemplate rabbitTemplate;
     @Autowired
     private AmazonS3Service amazonS3Service;
+    @Autowired
+    private PDSignService pdSignService;
 
     @Transactional
     public void abrirProcesso(OrganizacaoDTO organizacaoDTO) {
@@ -54,7 +53,9 @@ public class ProcessoService {
         List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
 
         for (Documento documento : documentos) {
-            documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso));
+            String processoPdSignId = pdSignService.criarProcesso(organizacaoDTO.responsavel());
+            String documentoPdSignId = pdSignService.criarDocumento(processoPdSignId, documento.getNome());
+            documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso, processoPdSignId, documentoPdSignId));
         }
 
         for (Dado dado : dados) {
@@ -69,12 +70,10 @@ public class ProcessoService {
         documentoSolicitadoRepository.saveAll(documentosSolicitados);
 
         notificarProspeccao(novoProcesso);
-
-        emailService.notificarOrganizacao(novoProcesso);
     }
 
     public List<Processo> consultarProcessos() {
-        return processoRepository.findAll();
+        return processoRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     public Processo consultarProcesso(Integer processoID) {
@@ -82,44 +81,61 @@ public class ProcessoService {
     }
 
     @Transactional
-    public Processo salvarProcesso(Integer processoID, ProcessoDTO processoDTO) {
+    public Processo salvarProcesso(Integer processoID, ProcessoDTO processoDTO, Boolean enviarParaAnalise) {
         Processo processo = processoRepository.findById(processoID).get();
-        List<DadoSolicitado> dadosSolicitados = dadoSolicitadoRepository.findByProcesso(processo);
-        List<Socio> socios = socioRepository.findByProcesso(processo);
+        List<DadoSolicitado> dadosSolicitados = processo.getDadosSolicitados();
+        List<Socio> socios = processo.getSocios();
+        List<Socio> novosSocios = new ArrayList<>();
 
-        if(processoDTO.dadosSolicitados() != null) {
-            for(DadoSolicitado dadoSolicitado : dadosSolicitados) {
-                DadoSolicitadoDTO dadoSolicitadoDTO = processoDTO.dadosSolicitados().stream().filter(dadoSolicitadoDTO1 -> dadoSolicitadoDTO1.id().equals(dadoSolicitado.getId())).findFirst().get();
+        for(DadoSolicitado dadoSolicitado : dadosSolicitados) {
+            DadoSolicitadoDTO dadoSolicitadoDTO = processoDTO.dadosSolicitados().stream().filter(dadoSolicitadoDTO1 -> dadoSolicitadoDTO1.id().equals(dadoSolicitado.getId())).findFirst().get();
 
-                dadoSolicitado.atualizar(dadoSolicitadoDTO, processo);
+            dadoSolicitado.atualizar(dadoSolicitadoDTO);
+        }
+
+        ListIterator<Socio> socioListIterator = socios.listIterator();
+
+        while(socioListIterator.hasNext()) {
+            Socio socio = socioListIterator.next();
+
+            Boolean contemSocio = processoDTO.socios().stream().anyMatch(socioDTO -> socioDTO.id() == socio.getId());
+
+            if(!contemSocio) {
+                socioListIterator.remove();
+                socioRepository.delete(socio);
             }
         }
 
-        if(processoDTO.socios() != null) {
-            for(SocioDTO socioDTO : processoDTO.socios()) {
-                socios.stream().filter(socio -> socio.getId().equals(socioDTO.id())).findFirst().ifPresentOrElse(socio -> socio.atualizar(socioDTO, processo), () -> {
-                    Socio novoSocio = new Socio(socioDTO, processo);
-                    socios.add(novoSocio);
-                });
-            }
-
-            socioRepository.saveAll(socios);
+        for(SocioDTO socioDTO : processoDTO.socios()) {
+            socios.stream().filter(socio -> socio.getId() == socioDTO.id()).findFirst().ifPresentOrElse(socio -> socio.atualizar(socioDTO, processo), () -> {
+                Socio novoSocio = new Socio(socioDTO, processo);
+                novosSocios.add(novoSocio);
+            });
         }
+
+        socioRepository.saveAll(novosSocios);
 
         processo.atualizar(processoDTO);
+
+        if(enviarParaAnalise) {
+            processo.atualizarStatus(StatusProcesso.EM_ANALISE);
+        }
 
         return processo;
     }
 
     @Transactional
-    public void vincularDocumentoAoProcesso(Integer processoID, Integer documentoID) {
+    public DocumentoSolicitado vincularDocumentoAoProcesso(Integer processoID, Integer documentoID) {
         Processo processo = processoRepository.findById(processoID).get();
         Documento documento = documentoRepository.findById(documentoID).get();
         DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(documento, processo);
 
-        documentoSolicitadoRepository.save(documentoSolicitado);
+        documentoSolicitado = documentoSolicitadoRepository.save(documentoSolicitado);
+
+        return documentoSolicitado;
     }
 
+    @Transactional
     public void desvincularDocumentoDoProcesso(Integer processoID, Integer documentoSolicitadoID) {
         Processo processo = processoRepository.findById(processoID).get();
         DocumentoSolicitado documentoSolicitado = documentoSolicitadoRepository.findById(documentoSolicitadoID).get();
@@ -139,12 +155,14 @@ public class ProcessoService {
     }
 
     @Transactional
-    public void vincularDadoAoProcesso(Integer processoID, Integer dadoID) {
+    public DadoSolicitado vincularDadoAoProcesso(Integer processoID, Integer dadoID) {
         Processo processo = processoRepository.findById(processoID).get();
         Dado dado = dadoRepository.findById(dadoID).get();
         DadoSolicitado dadoSolicitado = new DadoSolicitado(dado, processo);
 
-        dadoSolicitadoRepository.save(dadoSolicitado);
+        dadoSolicitado = dadoSolicitadoRepository.save(dadoSolicitado);
+
+        return dadoSolicitado;
     }
 
     public void desvincularDadoDoProcesso(Integer processoID, Integer dadoSolicitadoID) {
@@ -158,14 +176,16 @@ public class ProcessoService {
         }
     }
 
+    @Transactional
     public void atualizarStatusProcesso(Integer processoID, ProcessoDTO processoDTO) {
-        Processo processo = this.salvarProcesso(processoID, processoDTO);
+        Processo processo = processoRepository.findById(processoID).get();
+        processo.atualizarStatus(processoDTO.status());
         
         notificarProspeccao(processo);
     }
 
     @Transactional
-    public void enviarDocumentoSolicitadoNoProcesso(Integer documentoSolicitadoID, MultipartFile documento) {
+    public DocumentoSolicitado enviarDocumentoSolicitadoNoProcesso(Integer documentoSolicitadoID, MultipartFile documento) {
         DocumentoSolicitado documentoSolicitado = documentoSolicitadoRepository.findById(documentoSolicitadoID).get();
         Processo processo = documentoSolicitado.getProcesso();
         String nomeArquivoOriginal = documento.getOriginalFilename();
@@ -187,6 +207,15 @@ public class ProcessoService {
         amazonS3Service.armazenarArquivo(documento, caminhoArquivo);
 
         documentoSolicitado.atualizar(caminhoArquivo, nomeArquivoOriginal, tamanhoArquivo);
+
+        if(documentoSolicitado.getDocumento().getPadrao()) {
+            pdSignService.uploadDocumento(documento, documentoSolicitado.getPdsignProcessoId(), documentoSolicitado.getPdsignDocumentoId());
+
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            executorService.schedule(new PDSign(pdSignService, documentoSolicitado, executorService), 5, TimeUnit.SECONDS);
+        }
+
+        return documentoSolicitado;
     }
 
     public String baixarDocumentoSolicitadoNoProcesso(Integer documentoSolicitadoID) {
@@ -197,20 +226,63 @@ public class ProcessoService {
     }
 
     @Transactional
-    public void removerDocumentoSolicitadoEnviado(Integer documentoSolicitadoID) {
+    public DocumentoSolicitado removerDocumentoSolicitadoEnviado(Integer documentoSolicitadoID) {
         DocumentoSolicitado documentoSolicitado = documentoSolicitadoRepository.findById(documentoSolicitadoID).get();
         String pathArquivo = documentoSolicitado.getCaminhoS3();
         documentoSolicitado.removerEnvio();
 
-        amazonS3Service.excluirArquivo(pathArquivo);
+        if(pathArquivo != null) {
+            amazonS3Service.excluirArquivo(pathArquivo);
+        }
+
+        return documentoSolicitado;
     }
 
     private void notificarProspeccao(Processo processo) {
         Map<String, String> organizacao = new HashMap<>();
         organizacao.put("id", processo.getCadastroId().toString());
-        organizacao.put("status_cadastro", processo.getStatus().toString());
-        System.out.println(organizacao);
+        organizacao.put("cnpj", processo.getCnpj());
+        organizacao.put("nomeEmpresarial", processo.getNomeEmpresarial());
+        organizacao.put("email", processo.getEmail());
+        organizacao.put("statusCadastro", processo.getStatus().toString());
 
         rabbitTemplate.convertAndSend("compliance.ex", "", organizacao);
+    }
+
+    public List<Processo> consultarProcessosOrganizacao(Integer organizacaoId) {
+        return processoRepository.findByCadastroId(organizacaoId, Sort.by(Sort.Direction.ASC, "status"));
+    }
+
+    public List<PDSignProcessoDTO> consultarProcessoPDSign(Integer processoId) {
+        Processo processo = processoRepository.findById(processoId).get();
+        PDSignProcessosDTO pdSignProcessosDTO = pdSignService.buscarProcessosPDSign();
+
+        List<PDSignProcessoDTO> pdSignProcessoDTOList = new ArrayList<>();
+
+        PDSignProcessoDTO pdSignProcesso;
+        for(DocumentoSolicitado documentoSolicitado : processo.getDocumentosSolicitados()) {
+            pdSignProcesso = pdSignProcessosDTO.processes().stream().filter(pdSignProcessoDTO -> pdSignProcessoDTO.id().equals(documentoSolicitado.getPdsignProcessoId())).findFirst().get();
+
+            pdSignProcessoDTOList.add(pdSignProcesso);
+        }
+
+        return pdSignProcessoDTOList;
+    }
+
+    public class PDSign implements Runnable {
+        private DocumentoSolicitado documentoSolicitado;
+        private PDSignService pdSignService;
+        private ScheduledExecutorService executorService;
+
+        public PDSign(PDSignService pdSignService, DocumentoSolicitado documentoSolicitado, ScheduledExecutorService executorService) {
+            this.documentoSolicitado = documentoSolicitado;
+            this.pdSignService = pdSignService;
+            this.executorService = executorService;
+        }
+
+        @Override
+        public void run() {
+            pdSignService.updateProcesso(documentoSolicitado.getPdsignProcessoId());
+        }
     }
 }

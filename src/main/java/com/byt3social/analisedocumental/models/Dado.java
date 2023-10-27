@@ -2,15 +2,15 @@ package com.byt3social.analisedocumental.models;
 
 import com.byt3social.analisedocumental.dto.DadoDTO;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity(name = "Dado")
 @Table(name = "dados")
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Getter
+@Setter
 public class Dado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,16 +26,9 @@ public class Dado {
     }
 
     public void atualizar(DadoDTO dadoDTO) {
-        if(dadoDTO.nome() != null) {
-            this.nome = dadoDTO.nome();
-        }
-
-        if(dadoDTO.tipo() != null) {
-            this.tipo = dadoDTO.tipo();
-        }
-
-        if(dadoDTO.padrao() != null) {
-            this.padrao = dadoDTO.padrao();
-        }
+        this.nome = dadoDTO.nome();
+        this.tipo = dadoDTO.tipo();
+        this.padrao = dadoDTO.padrao();
     }
+    
 }
