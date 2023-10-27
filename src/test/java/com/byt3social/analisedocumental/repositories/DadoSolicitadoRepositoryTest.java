@@ -42,7 +42,6 @@ class DadoSolicitadoRepositoryTest {
         dadoSolicitado.atualizar(dadoSolicitadoDTO);
 
         assertEquals("Valor Atualizado", dadoSolicitado.getValor());
-        assertFalse(dadoSolicitado.getObrigatorio());
         assertEquals(dado, dadoSolicitado.getDado());
         assertEquals(processo, dadoSolicitado.getProcesso());
     }

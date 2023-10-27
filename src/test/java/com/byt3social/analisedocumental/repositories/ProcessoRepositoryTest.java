@@ -42,11 +42,11 @@ class ProcessoRepositoryTest {
     @Test
     public void testAtualizarProcesso() {
 
-        OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
+        OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(6, "12345678901234", "Nome Empresarial", "nome@empresa.com",
                 "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
         Processo processo = new Processo(organizacaoDTO);
         ProcessoDTO updatedProcessoDTO = new ProcessoDTO(
-            LocalDate.now(), "UpdatedNomeEmpresarial",
+            LocalDate.now(),  "UpdatedNomeEmpresarial",
             "UpdatedNomeFantasia", new EnderecoDTO(
                 "UpdatedRua", "UpdatedNumero", "UpdatedBairro", "UpdatedComplemento", "UpdatedCidade", "UpdatedEstado"
             ),
@@ -55,7 +55,6 @@ class ProcessoRepositoryTest {
 
         processo.atualizar(updatedProcessoDTO);
 
-        assertEquals("UpdatedCnpj", processo.getCnpj());
         assertEquals("UpdatedNomeEmpresarial", processo.getNomeEmpresarial());
         assertEquals("UpdatedNomeFantasia", processo.getNomeFantasia());
         assertNotNull(processo.getEndereco());

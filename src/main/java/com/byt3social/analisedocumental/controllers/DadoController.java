@@ -3,6 +3,11 @@ package com.byt3social.analisedocumental.controllers;
 import com.byt3social.analisedocumental.dto.DadoDTO;
 import com.byt3social.analisedocumental.models.Dado;
 import com.byt3social.analisedocumental.repositories.DadoRepository;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,18 +18,24 @@ import java.util.Optional;
 import java.util.List;
 
 @RestController
+@RequestMapping("/dados")
 public class DadoController {
     @Autowired
     private DadoRepository dadoRepository;
 
-    @GetMapping("/dados")
+    @Operation(summary = "Consultar todos os dados")
+    @ApiResponse(responseCode = "200", description = "Dados consultados com sucesso", content = @Content(schema = @Schema(implementation = List.class)))
+    @GetMapping
     public ResponseEntity consultarDados() {
         List<Dado> dados = dadoRepository.findAll();
 
         return new ResponseEntity<>(dados, HttpStatus.OK);
     }
 
-    @GetMapping("/dados/{id}")
+    @Operation(summary = "Consultar um dado por ID")
+    @ApiResponse(responseCode = "200", description = "Dado consultado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Dado não encontrado")
+    @GetMapping("/{id}")
     public ResponseEntity consultarDado(@PathVariable("id") Integer dadoID) {
         Optional<Dado> optionalDado = dadoRepository.findById(dadoID);
 
@@ -37,7 +48,9 @@ public class DadoController {
     }
 
 
-    @PostMapping("/dados")
+    @Operation(summary = "Cadastrar um novo dado")
+    @ApiResponse(responseCode = "201", description = "Dado cadastrado com sucesso")
+    @PostMapping
     @Transactional
     public ResponseEntity cadastrarDado(@RequestBody @Valid DadoDTO dadoDTO) {
         Dado dado = new Dado(dadoDTO);
@@ -46,7 +59,10 @@ public class DadoController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @PutMapping("/dados/{id}")
+    @Operation(summary = "Atualizar um dado existente")
+    @ApiResponse(responseCode = "204", description = "Dado atualizado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Dado não encontrado")
+    @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<?> atualizarDado(@PathVariable("id") Integer dadoID, @Valid @RequestBody DadoDTO dadoDTO) {
         Optional<Dado> optionalDado = dadoRepository.findById(dadoID);
@@ -62,7 +78,10 @@ public class DadoController {
     }
 
 
-    @DeleteMapping("/dados/{id}")
+    @Operation(summary = "Excluir um dado por ID")
+    @ApiResponse(responseCode = "200", description = "Dado excluído com sucesso")
+    @ApiResponse(responseCode = "404", description = "Dado não encontrado")
+    @DeleteMapping("/{id}")
     public ResponseEntity excluirDado(@PathVariable("id") Integer dadoID) {
         if (dadoRepository.existsById(dadoID)) {
             dadoRepository.deleteById(dadoID);

@@ -5,6 +5,11 @@ import com.byt3social.analisedocumental.models.Documento;
 import com.byt3social.analisedocumental.models.DocumentoSolicitado;
 import com.byt3social.analisedocumental.repositories.DocumentoRepository;
 import com.byt3social.analisedocumental.services.ProcessoService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +27,8 @@ public class DocumentoController {
     @Autowired
     private ProcessoService processoService;
 
+    @Operation(summary = "Consultar todos os documentos")
+    @ApiResponse(responseCode = "200", description = "Documentos consultados com sucesso", content = @Content(schema = @Schema(implementation = List.class)))
     @GetMapping("/documentos")
     public ResponseEntity consultarDocumentos() {
         List<Documento> documentos = documentoRepository.findAll();
@@ -29,6 +36,9 @@ public class DocumentoController {
         return new ResponseEntity<>(documentos, HttpStatus.OK);
     }
 
+    @Operation(summary = "Consultar um documento por ID")
+    @ApiResponse(responseCode = "200", description = "Documento consultado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Documento não encontrado")
     @GetMapping("/documentos/{id}")
     public ResponseEntity consultarDocumento(@PathVariable("id") Integer documentoID) {
         Optional<Documento> documentoOptional = documentoRepository.findById(documentoID);
@@ -41,6 +51,8 @@ public class DocumentoController {
         }
     }
 
+    @Operation(summary = "Cadastrar um novo documento")
+    @ApiResponse(responseCode = "201", description = "Documento cadastrado com sucesso")
     @PostMapping("/documentos")
     @Transactional
     public ResponseEntity cadastrarDocumento(@Valid @RequestBody DocumentoDTO documentoDTO) {
@@ -50,6 +62,9 @@ public class DocumentoController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Alterar um documento existente")
+    @ApiResponse(responseCode = "204", description = "Documento atualizado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Documento não encontrado")
     @PutMapping("/documentos/{id}")
     @Transactional
     public ResponseEntity alterarDocumento(@PathVariable("id") Integer documentoID, @Valid @RequestBody DocumentoDTO documentoDTO) {
@@ -64,7 +79,9 @@ public class DocumentoController {
         }
     }
 
-
+    @Operation(summary = "Excluir um documento por ID")
+    @ApiResponse(responseCode = "200", description = "Documento excluído com sucesso")
+    @ApiResponse(responseCode = "404", description = "Documento não encontrado")
     @DeleteMapping("/documentos/{id}")
     public ResponseEntity excluirDocumento(@PathVariable("id") Integer documentoID) {
         Optional<Documento> documentoOptional = documentoRepository.findById(documentoID);
@@ -77,6 +94,8 @@ public class DocumentoController {
         }
     }
 
+    @Operation(summary = "Solicitar reenvio de um documento solicitado")
+    @ApiResponse(responseCode = "204", description = "Reenvio solicitado com sucesso")
     @PostMapping("/documentos-solicitados/{id}/reenvio")
     public ResponseEntity solicitarReenvioDocumentoSolicitado(@PathVariable("id") Integer documentoSolicitadoID) {
         processoService.solicitarReenvioDocumentoSolicitado(documentoSolicitadoID);
@@ -84,6 +103,8 @@ public class DocumentoController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(summary = "Enviar documento solicitado no processo")
+    @ApiResponse(responseCode = "200", description = "Documento enviado com sucesso")
     @PostMapping("/documentos-solicitados/{id}/aws")
     public ResponseEntity enviarDocumentoSolicitado(@RequestParam MultipartFile documento, @PathVariable("id") Integer documentoSolicitadoID) {
         DocumentoSolicitado documentoSolicitado = processoService.enviarDocumentoSolicitadoNoProcesso(documentoSolicitadoID, documento);
@@ -91,6 +112,8 @@ public class DocumentoController {
         return new ResponseEntity(documentoSolicitado, HttpStatus.OK);
     }
 
+    @Operation(summary = "Recuperar documento solicitado no processo")
+    @ApiResponse(responseCode = "200", description = "Documento recuperado com sucesso")
     @GetMapping( "/documentos-solicitados/{id}/aws")
     public ResponseEntity recuperarDocumentoSolicitado(@PathVariable("id") Integer documentoSolicitradoID) {
         String urlArquivo = processoService.baixarDocumentoSolicitadoNoProcesso(documentoSolicitradoID);
@@ -98,6 +121,8 @@ public class DocumentoController {
         return new ResponseEntity(urlArquivo, HttpStatus.OK);
     }
 
+    @Operation(summary = "Remover documento solicitado enviado")
+    @ApiResponse(responseCode = "200", description = "Documento removido com sucesso")
     @DeleteMapping("/documentos-solicitados/{id}/aws")
     public ResponseEntity removerDocumentoEnviado(@PathVariable("id") Integer documentoSolicitadoID) {
         DocumentoSolicitado documentoSolicitado = processoService.removerDocumentoSolicitadoEnviado(documentoSolicitadoID);

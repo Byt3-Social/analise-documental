@@ -2,9 +2,12 @@ package com.byt3social.analisedocumental.controllers;
 
 import com.byt3social.analisedocumental.dto.EnderecoDTO;
 import com.byt3social.analisedocumental.dto.OrganizacaoDTO;
+import com.byt3social.analisedocumental.dto.PDSignProcessoDTO;
 import com.byt3social.analisedocumental.dto.ProcessoDTO;
 import com.byt3social.analisedocumental.dto.ResponsavelDTO;
 import com.byt3social.analisedocumental.enums.StatusProcesso;
+import com.byt3social.analisedocumental.models.DadoSolicitado;
+import com.byt3social.analisedocumental.models.DocumentoSolicitado;
 import com.byt3social.analisedocumental.models.Processo;
 import com.byt3social.analisedocumental.services.ProcessoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,14 +26,23 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,223 +58,151 @@ public class ProcessoControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ProcessoController processoController;
+
     @MockBean
     private ProcessoService processoService;
-    
+
     @Test
-    @DisplayName("Deve retornar status 200 para GET /processos")
-    void testConsultarProcessos() throws Exception {
+    public void testConsultarProcessos() throws Exception {
+        when(processoService.consultarProcessos()).thenReturn(Collections.emptyList());
 
-        ResultActions resultActions = mockMvc.perform(get("/processos")
-            .contentType(MediaType.APPLICATION_JSON));
+        mockMvc.perform(get("/processos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
 
-        resultActions.andExpect(status().isOk());
-        String contentType = resultActions.andReturn().getResponse().getContentType();
-        assertTrue(contentType != null && contentType.contains("application/json"));
+        verify(processoService, times(1)).consultarProcessos();
     }
 
     @Test
-    @DisplayName("Deve retornar status 200 e dados específicos para GET /organizacoes/{id}")
-    void testConsultarProcesso() throws Exception {
-        int idProcesso = 1;
-        
-        OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
-        Processo processo = new Processo(organizacaoDTO);
-        processo.setId(idProcesso);
+    public void testConsultarProcessosOrganizacao() throws Exception {
+        String organizacaoId = "1";
+        when(processoService.consultarProcessosOrganizacao(eq(1))).thenReturn(Collections.emptyList());
 
-        Mockito.when(processoService.consultarProcesso(idProcesso))
-            .thenReturn(processo);
+        mockMvc.perform(get("/processos/organizacoes")
+                .header("B3Social-Organizacao", organizacaoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
 
-        ResultActions resultActions = mockMvc.perform(get("/processos/{id}", idProcesso)
-            .contentType(MediaType.APPLICATION_JSON));
-
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(idProcesso));
+        verify(processoService, times(1)).consultarProcessosOrganizacao(eq(1));
     }
 
     @Test
-    @DisplayName("Deve retornar status 204 após vincular um documento a um processo")
-    public void testSolicitarDocumento() throws Exception {
+    public void testConsultarProcesso() throws Exception {
+        Integer processoID = 1;
+        Processo processo = new Processo(); // Criar um objeto de exemplo
+        when(processoService.consultarProcesso(eq(processoID))).thenReturn(processo);
 
-        mockMvc.perform(get("/processos/{id}/documentos/{documento}", 1, 2)  
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/processos/{id}", processoID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()));
+
+        verify(processoService, times(1)).consultarProcesso(eq(processoID));
     }
 
     @Test
-    @DisplayName("Deve retornar status 204 após solicitar um dado")
-    public void testSolicitarDado() throws Exception {
+    public void testConsultarProcessoPDSign() throws Exception {
+        Integer processoID = 1;
+        List<PDSignProcessoDTO> pdSignProcessoDTOList = Collections.emptyList();
+        when(processoService.consultarProcessoPDSign(eq(processoID))).thenReturn(pdSignProcessoDTOList);
 
-        mockMvc.perform(get("/processos/{id}/dados/{dado}", 1, 2)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
-}
+        mockMvc.perform(get("/processos/{id}/pdsign", processoID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
 
-    @Test
-    @DisplayName("Deve retornar status 400, já que os valores são nulos")
-    public void testAbrirProcessoNulo() throws Exception {
-
-        var response = mockMvc.perform(post("/organizacoes")).andReturn().getResponse();
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        verify(processoService, times(1)).consultarProcessoPDSign(eq(processoID));
     }
 
-
     @Test
-    @DisplayName("Deve retornar status 201, já que os valores são válidos ao abrir um processo")
     public void testAbrirProcesso() throws Exception {
-
-        OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
+        OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(null, null, null, null, null, null); // Criar um objeto de exemplo
+        doNothing().when(processoService).abrirProcesso(eq(organizacaoDTO));
 
         mockMvc.perform(post("/processos")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(organizacaoDTO)))
+                .content(new ObjectMapper().writeValueAsString(organizacaoDTO)))
                 .andExpect(status().isCreated());
+
+        verify(processoService, times(1)).abrirProcesso(eq(organizacaoDTO));
     }
-    
+
     @Test
-    @DisplayName("Deve retornar status 200 após a atualização de um processo")
     public void testSalvarProcesso() throws Exception {
+        Integer processoID = 1;
+        ProcessoDTO processoDTO = new ProcessoDTO(null, null, null, null, null, null, null, null, null, null, null, null, null); // Criar um objeto de exemplo
 
-        OrganizacaoDTO organizacaoDTO = new OrganizacaoDTO(1, "12345678901234", "Nome Empresarial", "nome@empresa.com",
-                "1234567890", new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"));
-        Processo processo = new Processo(organizacaoDTO);
-        ProcessoDTO updatedProcessoDTO = new ProcessoDTO(
-            LocalDate.now(), "UpdatedNomeEmpresarial",
-            "UpdatedNomeFantasia", new EnderecoDTO(
-                "UpdatedRua", "UpdatedNumero", "UpdatedBairro", "UpdatedComplemento", "UpdatedCidade", "UpdatedEstado"
-            ),
-            "UpdatedPorte", "updated@email.com", "9876543210", null, null, null, null, null, null
-        );
-
-        mockMvc.perform(put("/processos/{id}/atualizar", 1)  
+        mockMvc.perform(put("/processos/{id}/atualizar", processoID)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(updatedProcessoDTO)))
+                .content(new ObjectMapper().writeValueAsString(processoDTO)))
                 .andExpect(status().isNoContent());
+
+        verify(processoService, times(1)).salvarProcesso(eq(processoID), eq(processoDTO), eq(false));
     }
 
-
     @Test
-    @DisplayName("Deve retornar status 204 após atualizar o status de um processo")
-    public void testAtualizarStatusProcesso() throws Exception {
-    
+    public void testSolicitarDocumento() throws Exception {
+        Integer processoID = 1;
+        Integer documentoID = 1;
+        DocumentoSolicitado documentoSolicitado = new DocumentoSolicitado(); // Criar um objeto de exemplo
+        when(processoService.vincularDocumentoAoProcesso(eq(processoID), eq(documentoID))).thenReturn(documentoSolicitado);
 
-    ProcessoDTO processoDTO = new ProcessoDTO(
-        LocalDate.now(),
-        "Nome Empresarial", 
-        "Nome Fantasia", 
-        new EnderecoDTO("Rua", "Numero", "Bairro", "Complemento", "Cidade", "Estado"), 
-        "Porte", 
-        "nome@empresa.com",
-        "1234567890",
-        StatusProcesso.APROVADO,
-        new ResponsavelDTO("Responsavel Nome", "12345678912", "responsavel@empresa.com", "987654321"),
-        "uuid123",
-        "Feedback",
-        null,
-        null
-    );
+        mockMvc.perform(post("/processos/{id}/documentos/{documento}", processoID, documentoID))
+                .andExpect(status().isNoContent());
 
-    doNothing().when(processoService).atualizarStatusProcesso(eq(1), eq(processoDTO));
-
-    mockMvc.perform(put("/processos/1/status")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(asJsonString(processoDTO)))
-        .andExpect(status().isNoContent());
-
-
-    assertThat(processoDTO.status()).isEqualTo(StatusProcesso.APROVADO);
+        verify(processoService, times(1)).vincularDocumentoAoProcesso(eq(processoID), eq(documentoID));
     }
 
-    /*@Test
-    @DisplayName("Deve retornar status 204 após submeter um processo")
-    public void testSubmeterProcesso() throws Exception {
-
-        SocioDTO socio = new SocioDTO(1,"nome sócio", "111111111111111", "qualificado");
-        List<SocioDTO> socios = Arrays.asList(socio);
-        DocumentoDTO documentoDTO = new DocumentoDTO(1, "Nome do Documento", true);
-
-        DocumentoSolicitadoDTO documentoSolicitado = new DocumentoSolicitadoDTO(
-            1,                      
-            "caminho/s3/arquivo",      
-            "nome_arquivo.txt",     
-            new Date(),              
-            new Date(),               
-            BigInteger.valueOf(1024), 
-            StatusDocumentoSolicitado.ENVIADO,  
-            "assinatura_digital",    
-            true,                     
-            documentoDTO              
-        );
-
-    List<DocumentoSolicitadoDTO> documentosSolicitados = Arrays.asList(documentoSolicitado);
-
-    DadoDTO dado = new DadoDTO(
-        1, 
-        "Nome do Dado", 
-        "TEXT",
-        true
-    );
-
-    DadoSolicitadoDTO dadoSolicitado = new DadoSolicitadoDTO(
-        1, 
-        "Valor do Dado", 
-        true,
-        dado 
-    );
-
-List<DadoSolicitadoDTO> dadoSolicitados = Arrays.asList(dadoSolicitado);
-        Timestamp createdTimestamp = Timestamp.valueOf(LocalDateTime.now()); 
-        Timestamp updatedTimestamp = Timestamp.valueOf(LocalDateTime.now()); 
-
-        ProcessoDTO processoDTO = new ProcessoDTO(
-            1,
-            1,
-            "12345678901234",
-            new Date(),
-            "Nome Empresarial",
-            "Nome Fantasia",
-            new EnderecoDTO("Rua", "Numero", "Bairro", "Complemento", "Cidade", "Estado"),
-            "Porte",
-            "byt3social@gmail.com",
-            "1234567890",
-            createdTimestamp,
-            updatedTimestamp,
-            StatusProcesso.APROVADO,
-            new ResponsavelDTO("Responsavel Nome", "boltwelter@gmail.com", "987654321"),
-            "uuid123",
-            "Feedback",
-            socios,
-            documentosSolicitados,
-            dadoSolicitados
-        );
-
-                mockMvc.perform(put("/processos/1/finalizar")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(processoDTO)))
-                .andExpect(status().isNoContent());
-    }*/
-    
-
     @Test
-    @DisplayName("Deve retornar status 204 após a exclusão de um documento solicitado")
     public void testExcluirDocumentoSolicitado() throws Exception {
+        Integer processoID = 1;
+        Integer documentoSolicitadoID = 1;
+        doNothing().when(processoService).desvincularDocumentoDoProcesso(eq(processoID), eq(documentoSolicitadoID));
 
-        mockMvc.perform(delete("/processos/{id}/documentos-solicitados/{documento}", 1, 3) 
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(delete("/processos/{id}/documentos-solicitados/{documento}", processoID, documentoSolicitadoID))
                 .andExpect(status().isNoContent());
+
+        verify(processoService, times(1)).desvincularDocumentoDoProcesso(eq(processoID), eq(documentoSolicitadoID));
     }
 
     @Test
-    @DisplayName("Deve retornar status 204 após excluir um dado solicitado")
-    public void testExcluirDadoSolicitado() throws Exception {
+    public void testSolicitarDado() throws Exception {
+        Integer processoID = 1;
+        Integer dadoID = 1;
+        DadoSolicitado dadoSolicitado = new DadoSolicitado(); // Criar um objeto de exemplo
+        when(processoService.vincularDadoAoProcesso(eq(processoID), eq(dadoID))).thenReturn(dadoSolicitado);
 
-        mockMvc.perform(delete("/processos/{id}/dados-solicitados/{dado}", 1, 3)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/processos/{id}/dados/{dado}", processoID, dadoID))
                 .andExpect(status().isNoContent());
+
+        verify(processoService, times(1)).vincularDadoAoProcesso(eq(processoID), eq(dadoID));
+    }
+
+    @Test
+    public void testExcluirDadoSolicitado() throws Exception {
+        Integer processoID = 1;
+        Integer dadoSolicitadoID = 1;
+        doNothing().when(processoService).desvincularDadoDoProcesso(eq(processoID), eq(dadoSolicitadoID));
+
+        mockMvc.perform(delete("/processos/{id}/dados-solicitados/{dado}", processoID, dadoSolicitadoID))
+                .andExpect(status().isNoContent());
+
+        verify(processoService, times(1)).desvincularDadoDoProcesso(eq(processoID), eq(dadoSolicitadoID));
+    }
+
+    @Test
+    public void testAtualizarStatusProcesso() throws Exception {
+        Integer processoID = 1;
+        ProcessoDTO processoDTO = new ProcessoDTO(null, null, null, null, null, null, null, null, null, null, null, null, null); // Criar um objeto de exemplo
+        doNothing().when(processoService).atualizarStatusProcesso(eq(processoID), eq(processoDTO));
+
+        mockMvc.perform(put("/processos/{id}/status", processoID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(processoDTO)))
+                .andExpect(status().isNoContent());
+
+        verify(processoService, times(1)).atualizarStatusProcesso(eq(processoID), eq(processoDTO));
     }
 
     
 }
-
