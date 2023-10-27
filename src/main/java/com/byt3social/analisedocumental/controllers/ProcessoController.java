@@ -95,7 +95,7 @@ public class ProcessoController {
     public ResponseEntity solicitarDocumento(@PathVariable("id") Integer processoID, @PathVariable("documento") Integer documentoID) {
         DocumentoSolicitado documentoSolicitado = processoService.vincularDocumentoAoProcesso(processoID, documentoID);
 
-        return new ResponseEntity<>(documentoSolicitado, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(documentoSolicitado, HttpStatus.OK);
     }
 
     @Operation(summary = "Excluir documento solicitado do processo")
@@ -113,7 +113,7 @@ public class ProcessoController {
     public ResponseEntity solicitarDado(@PathVariable("id") Integer processoID, @PathVariable("dado") Integer dadoID) {
         DadoSolicitado dadoSolicitado = processoService.vincularDadoAoProcesso(processoID, dadoID);
 
-        return new ResponseEntity<>(dadoSolicitado, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(dadoSolicitado, HttpStatus.OK);
     }
 
     @Operation(summary = "Excluir dado solicitado do processo")
