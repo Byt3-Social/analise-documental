@@ -53,9 +53,13 @@ public class ProcessoService {
         List<DadoSolicitado> dadosSolicitados = new ArrayList<>();
 
         for (Documento documento : documentos) {
-            String processoPdSignId = pdSignService.criarProcesso(organizacaoDTO.responsavel());
-            String documentoPdSignId = pdSignService.criarDocumento(processoPdSignId, documento.getNome());
-            documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso, processoPdSignId, documentoPdSignId));
+            try {
+                String processoPdSignId = pdSignService.criarProcesso(organizacaoDTO.responsavel());
+                String documentoPdSignId = pdSignService.criarDocumento(processoPdSignId, documento.getNome());
+                documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso, processoPdSignId, documentoPdSignId));
+            } catch (Exception e) {
+                documentosSolicitados.add(new DocumentoSolicitado(documento, novoProcesso, null, null));
+            }
         }
 
         for (Dado dado : dados) {
